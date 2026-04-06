@@ -1,0 +1,2529 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Guardiões do Carbono no Pantanal</title>
+<style>
+/* ============================================
+   GUARDIÕES DO CARBONO NO PANTANAL
+   Jogo Educativo de Extensão Universitária
+   UNEMAT - Cáceres/MT
+   ============================================ */
+
+/* --- RESET & BASE --- */
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:#1a3a2a;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+
+/* --- CSS VARIABLES --- */
+:root{
+  --sky1:#87CEEB;--sky2:#5BA3D9;--sky3:#E8A87C;
+  --green1:#4CAF50;--green2:#2E7D32;--green3:#81C784;
+  --water1:#2196F3;--water2:#1565C0;--water3:#64B5F6;
+  --soil1:#8D6E63;--soil2:#6D4C41;--soil3:#A1887F;
+  --fire1:#FF5722;--fire2:#E64A19;--fire3:#FF8A65;
+  --sand1:#FFD54F;--sand2:#FFC107;
+  --block-radius:4px;
+  --ui-radius:12px;
+  --shadow:0 4px 12px rgba(0,0,0,0.2);
+  --font-display:'Segoe UI',sans-serif;
+}
+
+/* --- GAME CONTAINER --- */
+#game-container{width:100%;height:100%;position:relative;overflow:hidden;background:#000}
+canvas{display:block;width:100%;height:100%;image-rendering:pixelated}
+
+/* --- UI OVERLAY LAYER --- */
+.ui-overlay{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10}
+.ui-overlay>*{pointer-events:auto}
+
+/* --- HUD --- */
+#hud{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:flex-start;padding:8px 12px;z-index:20;pointer-events:none}
+#hud>*{pointer-events:auto}
+.hud-left,.hud-right{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.hud-badge{background:rgba(255,255,255,0.92);border-radius:20px;padding:4px 12px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:5px;box-shadow:0 2px 8px rgba(0,0,0,0.15);backdrop-filter:blur(4px);white-space:nowrap}
+.hud-badge .icon{font-size:16px}
+.hud-badge .val{color:#333}
+.hud-phase{background:rgba(46,125,50,0.9);color:#fff;border-radius:20px;padding:5px 14px;font-size:12px;font-weight:700;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* --- SCREENS --- */
+.screen{position:absolute;top:0;left:0;width:100%;height:100%;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:100;overflow-y:auto}
+.screen.active{display:flex}
+
+/* --- TITLE SCREEN --- */
+#title-screen{background:linear-gradient(180deg,#87CEEB 0%,#5BA3D9 30%,#4CAF50 60%,#2E7D32 100%);text-align:center;padding:20px;gap:10px}
+.title-logo{display:flex;flex-direction:column;align-items:center;gap:8px}
+.title-icon{font-size:clamp(48px,12vw,80px);filter:drop-shadow(0 4px 8px rgba(0,0,0,0.3))}
+.title-main{font-size:clamp(22px,5vw,36px);font-weight:900;color:#fff;text-shadow:0 3px 6px rgba(0,0,0,0.3);line-height:1.1}
+.title-sub{font-size:clamp(13px,3vw,18px);color:rgba(255,255,255,0.9);font-weight:500;max-width:360px;line-height:1.4}
+.title-unemat{font-size:11px;color:rgba(255,255,255,0.7);margin-top:4px;font-weight:600;letter-spacing:0.5px}
+
+/* --- BUTTONS --- */
+.btn{border:none;border-radius:var(--ui-radius);padding:14px 32px;font-size:16px;font-weight:700;cursor:pointer;box-shadow:var(--shadow);transition:transform 0.15s,box-shadow 0.15s;min-height:48px;min-width:140px;text-transform:uppercase;letter-spacing:0.5px}
+.btn:active{transform:scale(0.95)}
+.btn-primary{background:linear-gradient(135deg,#FF8F00,#E65100);color:#fff;border:2px solid rgba(255,255,255,0.3)}
+.btn-secondary{background:linear-gradient(135deg,#2E7D32,#1B5E20);color:#fff;border:2px solid rgba(255,255,255,0.2)}
+.btn-small{padding:10px 20px;font-size:13px;min-width:100px;min-height:40px}
+.btn-outline{background:rgba(255,255,255,0.2);color:#fff;border:2.5px solid rgba(255,255,255,0.7);font-weight:700}
+
+/* --- MAP SCREEN --- */
+#map-screen{background:linear-gradient(180deg,#E8F5E9 0%,#C8E6C9 50%,#A5D6A7 100%);padding:16px;gap:8px;justify-content:flex-start;overflow-y:auto}
+.map-title{font-size:clamp(18px,4vw,26px);font-weight:900;color:#2E7D32;text-align:center;padding-top:10px}
+.map-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;width:100%;max-width:600px;padding:10px 0}
+.map-node{background:#fff;border-radius:var(--ui-radius);padding:14px 10px;text-align:center;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,0.1);transition:transform 0.2s,box-shadow 0.2s;border:3px solid transparent;display:flex;flex-direction:column;align-items:center;gap:6px}
+.map-node:active{transform:scale(0.95)}
+.map-node.locked{opacity:0.5;cursor:not-allowed;filter:grayscale(0.5)}
+.map-node.locked::after{content:'🔒';font-size:20px}
+.map-node.current{border-color:#FF9800;box-shadow:0 0 0 3px rgba(255,152,0,0.3)}
+.map-node.completed{border-color:#4CAF50}
+.map-node.completed::after{content:'✅';font-size:16px}
+.map-node .node-icon{font-size:28px}
+.map-node .node-name{font-size:12px;font-weight:700;color:#333;line-height:1.2}
+.map-node .node-desc{font-size:10px;color:#666;line-height:1.2}
+
+/* --- DIALOGUE BOX --- */
+#dialogue-box{position:absolute;bottom:80px;left:50%;transform:translateX(-50%);width:calc(100% - 24px);max-width:500px;background:rgba(255,255,255,0.96);border-radius:16px;padding:14px 16px;box-shadow:0 4px 20px rgba(0,0,0,0.25);z-index:30;display:none;backdrop-filter:blur(6px)}
+#dialogue-box.active{display:block}
+.dlg-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.dlg-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;background:#E8F5E9}
+.dlg-name{font-weight:800;font-size:14px;color:#2E7D32}
+.dlg-text{font-size:14px;color:#333;line-height:1.5;min-height:40px}
+.dlg-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.dlg-btn{background:#2E7D32;border:none;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;transition:all 0.15s;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.dlg-btn:active{background:#1B5E20;color:#fff;transform:scale(0.95)}
+.dlg-btn.correct-flash{background:#4CAF50;color:#fff;animation:correctPulse 0.5s}
+.dlg-btn.wrong-flash{background:#f44336;color:#fff;animation:wrongShake 0.4s}
+
+@keyframes correctPulse{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
+@keyframes wrongShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+/* --- MOBILE CONTROLS --- */
+#mobile-controls{position:absolute;bottom:10px;left:0;right:0;display:flex;justify-content:space-between;align-items:flex-end;padding:0 12px;z-index:25;pointer-events:none}
+#mobile-controls>*{pointer-events:auto}
+.ctrl-dpad{display:flex;gap:6px;align-items:center}
+.ctrl-btn{width:56px;height:56px;border-radius:50%;border:3px solid rgba(0,0,0,0.12);font-size:22px;font-weight:900;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
+.ctrl-move{background:linear-gradient(180deg,#fff,#e0e0e0);color:#333;border:3px solid rgba(0,0,0,0.15)}
+.ctrl-action{background:linear-gradient(135deg,#FF8F00,#E65100);color:#fff;width:64px;height:64px;font-size:15px;font-weight:900;border:3px solid rgba(255,255,255,0.4);text-shadow:0 2px 4px rgba(0,0,0,0.4);letter-spacing:0.5px}
+.ctrl-jump{background:linear-gradient(135deg,#2E7D32,#1B5E20);color:#fff;border:3px solid rgba(255,255,255,0.3);text-shadow:0 2px 4px rgba(0,0,0,0.4)}
+
+/* --- PHASE SUMMARY --- */
+#phase-summary{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+#phase-summary.active{display:flex}
+.summary-card{background:#fff;border-radius:20px;padding:24px 20px;max-width:420px;width:100%;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,0.3);max-height:90vh;overflow-y:auto}
+.summary-card h2{font-size:20px;color:#2E7D32;margin-bottom:6px}
+.summary-card .stars{font-size:28px;margin:8px 0}
+.summary-card .learn-title{font-size:14px;font-weight:700;color:#FF9800;margin:10px 0 6px}
+.summary-card .learn-text{font-size:13px;color:#555;line-height:1.5;text-align:left}
+.summary-card .learn-text p{margin-bottom:8px}
+.summary-scores{display:flex;justify-content:center;gap:16px;margin:12px 0}
+.summary-score{text-align:center}
+.summary-score .sc-icon{font-size:22px}
+.summary-score .sc-val{font-size:18px;font-weight:800;color:#333}
+.summary-score .sc-label{font-size:10px;color:#888}
+
+/* --- MINIGAME OVERLAYS --- */
+.minigame-overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);display:none;align-items:center;justify-content:center;z-index:40;padding:12px}
+.minigame-overlay.active{display:flex}
+.minigame-card{background:#fff;border-radius:20px;padding:20px;max-width:460px;width:100%;max-height:85vh;overflow-y:auto;box-shadow:0 8px 30px rgba(0,0,0,0.3)}
+.mg-title{font-size:18px;font-weight:800;color:#2E7D32;text-align:center;margin-bottom:12px}
+.mg-desc{font-size:13px;color:#555;text-align:center;margin-bottom:16px;line-height:1.4}
+
+/* Quiz minigame */
+.quiz-question{font-size:15px;font-weight:700;color:#333;margin-bottom:12px;line-height:1.4}
+.quiz-options{display:flex;flex-direction:column;gap:8px}
+.quiz-opt{background:#f5f5f5;border:2px solid #ddd;border-radius:12px;padding:12px 16px;font-size:14px;cursor:pointer;transition:all 0.15s;text-align:left}
+.quiz-opt:active{background:#E8F5E9;border-color:#4CAF50}
+.quiz-opt.correct{background:#E8F5E9;border-color:#4CAF50;color:#2E7D32}
+.quiz-opt.wrong{background:#FFEBEE;border-color:#f44336;color:#c62828}
+.quiz-feedback{margin-top:12px;padding:10px;border-radius:10px;font-size:13px;line-height:1.4;display:none}
+.quiz-feedback.show{display:block}
+.quiz-feedback.pos{background:#E8F5E9;color:#2E7D32}
+.quiz-feedback.neg{background:#FFEBEE;color:#c62828}
+
+/* Drag minigame */
+.drag-zone{min-height:80px;border:2px dashed #ccc;border-radius:12px;padding:10px;margin:8px 0;display:flex;flex-wrap:wrap;gap:6px;align-items:flex-start;transition:background 0.2s}
+.drag-zone.highlight{background:#E8F5E9;border-color:#4CAF50}
+.drag-item{background:linear-gradient(135deg,#FF9800,#F57C00);color:#fff;border-radius:10px;padding:8px 14px;font-size:13px;font-weight:700;cursor:grab;box-shadow:0 2px 6px rgba(0,0,0,0.15);touch-action:none}
+.drag-item.placed{background:linear-gradient(135deg,#4CAF50,#388E3C)}
+
+/* Match minigame */
+.match-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.match-item{background:#f0f0f0;border:2px solid #ddd;border-radius:10px;padding:10px;font-size:12px;text-align:center;cursor:pointer;transition:all 0.15s;min-height:50px;display:flex;align-items:center;justify-content:center}
+.match-item.selected{border-color:#FF9800;background:#FFF3E0}
+.match-item.matched{border-color:#4CAF50;background:#E8F5E9;opacity:0.7}
+
+/* Bars display */
+.emission-bars{display:flex;flex-direction:column;gap:8px;margin:10px 0}
+.ebar{display:flex;align-items:center;gap:8px}
+.ebar-label{font-size:12px;font-weight:600;color:#555;width:90px;text-align:right}
+.ebar-track{flex:1;height:22px;background:#e0e0e0;border-radius:11px;overflow:hidden;position:relative}
+.ebar-fill{height:100%;border-radius:11px;transition:width 0.8s ease}
+.ebar-val{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.3)}
+.ebar-level{font-size:11px;font-weight:700;width:65px}
+
+/* --- NOTIFICATION --- */
+.notification{position:absolute;top:60px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,0.95);border-radius:14px;padding:10px 20px;font-size:14px;font-weight:700;box-shadow:0 4px 16px rgba(0,0,0,0.2);z-index:35;opacity:0;transition:opacity 0.3s;pointer-events:none;text-align:center;max-width:320px}
+.notification.show{opacity:1}
+.notification.success{border-left:4px solid #4CAF50;color:#2E7D32}
+.notification.info{border-left:4px solid #2196F3;color:#1565C0}
+.notification.warning{border-left:4px solid #FF9800;color:#E65100}
+
+/* --- PAUSE MENU --- */
+#pause-menu{background:rgba(0,0,0,0.8);z-index:60;gap:12px}
+#pause-menu h2{color:#fff;font-size:22px}
+
+/* --- MEDALS SCREEN --- */
+#medals-screen{background:linear-gradient(180deg,#FFF8E1,#FFECB3);padding:20px;gap:10px;justify-content:flex-start;overflow-y:auto}
+.medals-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;width:100%;max-width:500px;padding-bottom:20px}
+.medal-item{background:#fff;border-radius:14px;padding:12px 8px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+.medal-item.locked{opacity:0.35;filter:grayscale(1)}
+.medal-item .m-icon{font-size:32px}
+.medal-item .m-name{font-size:11px;font-weight:700;color:#333;margin-top:4px}
+
+/* --- PHASE INTRO --- */
+#phase-intro{background:rgba(0,0,0,0.8);z-index:55;gap:12px;text-align:center;padding:24px}
+#phase-intro .pi-icon{font-size:56px}
+#phase-intro .pi-title{font-size:clamp(20px,5vw,28px);font-weight:900;color:#fff}
+#phase-intro .pi-desc{font-size:14px;color:rgba(255,255,255,0.85);max-width:380px;line-height:1.5}
+#phase-intro .pi-obj{background:rgba(255,255,255,0.1);border-radius:12px;padding:12px 16px;margin-top:8px}
+#phase-intro .pi-obj h4{color:#FF9800;font-size:13px;margin-bottom:4px}
+#phase-intro .pi-obj p{color:rgba(255,255,255,0.8);font-size:12px;line-height:1.4}
+
+/* --- SETTINGS --- */
+#settings-screen{background:rgba(0,0,0,0.85);z-index:60;gap:16px}
+.settings-card{background:#fff;border-radius:20px;padding:24px;max-width:360px;width:calc(100% - 32px)}
+.settings-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #eee}
+.settings-row:last-child{border:none}
+.settings-label{font-size:14px;font-weight:600;color:#333}
+.toggle{width:48px;height:26px;background:#ccc;border-radius:13px;position:relative;cursor:pointer;transition:background 0.2s}
+.toggle.on{background:#4CAF50}
+.toggle::after{content:'';position:absolute;width:22px;height:22px;background:#fff;border-radius:50%;top:2px;left:2px;transition:left 0.2s;box-shadow:0 1px 4px rgba(0,0,0,0.2)}
+.toggle.on::after{left:24px}
+
+
+/* --- DAMAGE FLASH --- */
+.damage-flash{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(255,0,0,0.3);pointer-events:none;z-index:15;opacity:0;transition:opacity 0.15s}
+.damage-flash.active{opacity:1}
+
+/* --- HP BAR --- */
+#hud-hp-wrap{display:flex;align-items:center;gap:4px}
+#hud-hp-bar{width:72px;height:10px;background:#ddd;border-radius:5px;overflow:hidden;border:1px solid rgba(0,0,0,0.1)}
+#hud-hp-fill{height:100%;background:linear-gradient(90deg,#4CAF50,#8BC34A);border-radius:5px;transition:width 0.3s}
+
+/* --- NOTIFICATION DANGER --- */
+.notification.danger{border-left:4px solid #D32F2F;color:#B71C1C}
+
+/* --- ANIMATIONS --- */
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.anim-fade{animation:fadeIn 0.4s ease}
+.anim-slide{animation:slideUp 0.5s ease}
+.anim-float{animation:float 2s ease-in-out infinite}
+
+/* --- SCROLLBAR --- */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.2);border-radius:2px}
+
+/* --- RESPONSIVE --- */
+@media(min-width:768px){
+  .ctrl-btn{width:60px;height:60px;font-size:24px}
+  .ctrl-action{width:66px;height:66px}
+  .hud-badge{font-size:14px;padding:5px 14px}
+}
+@media(max-width:360px){
+  .hud-badge{font-size:11px;padding:3px 8px}
+  .ctrl-btn{width:46px;height:46px;font-size:18px}
+  .ctrl-action{width:50px;height:50px;font-size:12px}
+  .btn{padding:12px 24px;font-size:14px}
+}
+</style>
+</head>
+<body>
+
+<div id="game-container">
+  <canvas id="game-canvas"></canvas>
+  <div class="damage-flash" id="damage-flash"></div>
+  
+  <div class="ui-overlay">
+    <!-- HUD -->
+    <div id="hud" style="display:none">
+      <div class="hud-left">
+        <div class="hud-badge" id="hud-hp-wrap"><span class="icon">❤️</span><div id="hud-hp-bar"><div id="hud-hp-fill" style="width:100%"></div></div></div>
+        <div class="hud-badge"><span class="icon">🔬</span><span class="val" id="hud-science">0</span></div>
+        <div class="hud-badge"><span class="icon">🤝</span><span class="val" id="hud-community">0</span></div>
+        <div class="hud-badge"><span class="icon">🌿</span><span class="val" id="hud-conserv">0</span></div>
+      </div>
+      <div class="hud-right">
+        <div class="hud-phase" id="hud-phase-name">Fase 1</div>
+        <div class="hud-badge" style="cursor:pointer" onclick="G.togglePause()">⚙️</div>
+      </div>
+    </div>
+
+    <!-- Dialogue -->
+    <div id="dialogue-box">
+      <div class="dlg-header">
+        <div class="dlg-avatar" id="dlg-avatar">👤</div>
+        <div class="dlg-name" id="dlg-name">Nome</div>
+      </div>
+      <div class="dlg-text" id="dlg-text">Texto aqui...</div>
+      <div class="dlg-actions" id="dlg-actions"></div>
+    </div>
+
+    <!-- Mobile Controls -->
+    <div id="mobile-controls" style="display:none">
+      <div class="ctrl-dpad">
+        <button class="ctrl-btn ctrl-move" id="btn-left">◀</button>
+        <button class="ctrl-btn ctrl-jump" id="btn-jump">▲</button>
+        <button class="ctrl-btn ctrl-move" id="btn-right">▶</button>
+      </div>
+      <button class="ctrl-btn ctrl-action" id="btn-interact">AÇÃO</button>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
+  </div>
+
+  <!-- ===== SCREENS ===== -->
+
+  <!-- Title Screen -->
+  <div id="title-screen" class="screen active">
+    <div class="title-logo anim-fade">
+      <div class="title-icon anim-float">🌿</div>
+      <div class="title-main">Guardiões do Carbono</div>
+      <div class="title-main" style="font-size:clamp(14px,3.5vw,22px);color:rgba(255,255,255,0.9)">no Pantanal</div>
+      <div class="title-sub">Explore, aprenda e leve a ciência para a comunidade. Um jogo de extensão universitária sobre carbono, conservação e sociedade.</div>
+      <div class="title-unemat">UNEMAT · Campus Cáceres · Mato Grosso</div>
+    </div>
+    <button class="btn btn-primary anim-slide" onclick="G.startGame()">JOGAR</button>
+    <button class="btn btn-outline btn-small anim-slide" onclick="G.showMedals()">🏅 Medalhas</button>
+    <button class="btn btn-outline btn-small anim-slide" onclick="G.showSettings()">⚙️ Opções</button>
+    <div style="font-size:10px;color:rgba(255,255,255,0.5);margin-top:8px">v1.0 · Ciência + Sociedade + Pantanal</div>
+  </div>
+
+  <!-- Map Screen -->
+  <div id="map-screen" class="screen">
+    <div class="map-title">🗺️ Mapa do Pantanal</div>
+    <div style="font-size:12px;color:#555;text-align:center">Escolha uma fase para explorar</div>
+    <div class="map-grid" id="map-grid"></div>
+    <div style="display:flex;gap:8px;padding-bottom:20px">
+      <button class="btn btn-small btn-outline" style="color:#2E7D32;border-color:#2E7D32" onclick="G.showScreen('title-screen')">Início</button>
+      <button class="btn btn-small btn-outline" style="color:#FF9800;border-color:#FF9800" onclick="G.showMedals()">🏅 Medalhas</button>
+    </div>
+  </div>
+
+  <!-- Phase Intro -->
+  <div id="phase-intro" class="screen">
+    <div class="pi-icon" id="pi-icon">🌾</div>
+    <div class="pi-title" id="pi-title">Fase 1</div>
+    <div class="pi-desc" id="pi-desc">Descrição da fase</div>
+    <div class="pi-obj">
+      <h4>🎯 Objetivos</h4>
+      <p id="pi-objectives">Completar as missões</p>
+    </div>
+    <button class="btn btn-primary" onclick="G.beginPhase()">INICIAR</button>
+  </div>
+
+  <!-- Phase Summary -->
+  <div id="phase-summary">
+    <div class="summary-card anim-slide" id="summary-content"></div>
+  </div>
+
+  <!-- Minigame Overlay -->
+  <div class="minigame-overlay" id="minigame-overlay">
+    <div class="minigame-card anim-slide" id="minigame-content"></div>
+  </div>
+
+  <!-- Pause Menu -->
+  <div id="pause-menu" class="screen">
+    <h2>⏸️ Pausa</h2>
+    <button class="btn btn-primary" onclick="G.togglePause()">Continuar</button>
+    <button class="btn btn-secondary" onclick="G.showScreen('map-screen');G.isPaused=false">Mapa</button>
+    <button class="btn btn-outline" onclick="G.showSettings()">Opções</button>
+    <button class="btn btn-outline" onclick="G.showScreen('title-screen');G.isPaused=false">Menu</button>
+  </div>
+
+  <!-- Medals Screen -->
+  <div id="medals-screen" class="screen">
+    <div style="font-size:22px;font-weight:900;color:#E65100;padding-top:10px">🏅 Medalhas</div>
+    <div style="font-size:13px;color:#888;text-align:center">Conquiste medalhas completando fases e desafios</div>
+    <div class="medals-grid" id="medals-grid"></div>
+    <button class="btn btn-small btn-primary" onclick="G.returnFromMedals()">Voltar</button>
+  </div>
+
+  <!-- Settings -->
+  <div id="settings-screen" class="screen">
+    <div class="settings-card anim-fade">
+      <h3 style="text-align:center;margin-bottom:16px;color:#2E7D32">⚙️ Opções</h3>
+      <div class="settings-row">
+        <span class="settings-label">🔊 Som</span>
+        <div class="toggle" id="toggle-sound" onclick="G.toggleSound()"></div>
+      </div>
+      <div class="settings-row">
+        <span class="settings-label">📳 Vibração</span>
+        <div class="toggle on" id="toggle-vibrate" onclick="G.toggleVibrate()"></div>
+      </div>
+      <div class="settings-row" style="flex-direction:column;align-items:flex-start;gap:6px">
+        <span class="settings-label">🗑️ Progresso</span>
+        <button class="btn btn-small" style="background:#f44336;color:#fff;font-size:12px" onclick="if(confirm('Apagar todo o progresso?')){localStorage.removeItem('gc_save');location.reload()}">Resetar Tudo</button>
+      </div>
+      <button class="btn btn-secondary btn-small" style="margin-top:16px;width:100%" onclick="G.hideSettings()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================
+// GUARDIÕES DO CARBONO NO PANTANAL
+// Game Engine + Content
+// ============================================
+
+const G = {
+  // --- State ---
+  canvas: null, ctx: null,
+  W: 0, H: 0,
+  currentScreen: 'title-screen',
+  isPaused: false,
+  soundOn: false,
+  vibrateOn: true,
+  score: { science: 0, community: 0, conservation: 0 },
+  completedPhases: [],
+  medals: [],
+  currentPhase: 0,
+  phaseState: null,
+  keys: {},
+  touchControls: { left: false, right: false, jump: false, action: false },
+  lastTime: 0,
+  animFrame: null,
+  previousScreen: 'title-screen',
+
+  // --- Player ---
+  player: {
+    x: 100, y: 0, vx: 0, vy: 0,
+    w: 28, h: 36,
+    onGround: false,
+    facing: 1,
+    frame: 0, frameTime: 0,
+    speed: 160, jumpForce: -320,
+    interactTarget: null,
+    hp: 5, maxHp: 5, invTimer: 0
+  },
+
+  // --- Camera ---
+  camera: { x: 0, y: 0 },
+
+  // --- World ---
+  world: {
+    width: 2400,
+    height: 600,
+    gravity: 800,
+    platforms: [],
+    objects: [],
+    npcs: [],
+    collectibles: [],
+    decorations: [],
+    obstacles: [],
+    bgColor1: '#87CEEB',
+    bgColor2: '#5BA3D9',
+    groundColor: '#8D6E63',
+    groundTop: '#4CAF50'
+  },
+
+
+  // ============================================
+  // OBSTACLE TYPES
+  // ============================================
+  obstacleTypes: {
+    jacare:{w:40,h:16,damage:1,label:'🐊 Jacaré! Cuidado!',moving:true,range:60,speed:30},
+    onca:{w:36,h:28,damage:2,label:'🐆 Onça-pintada! Desvie!',moving:true,range:80,speed:50},
+    cobra:{w:30,h:10,damage:1,label:'🐍 Cobra no caminho!',moving:false},
+    aranha:{w:20,h:18,damage:1,label:'🕷️ Aranha-caranguejeira!',moving:false},
+    buraco:{w:50,h:8,damage:1,label:'⚠️ Buraco! Pule!',moving:false,isGround:true},
+    ponte:{w:60,h:12,damage:1,label:'🌉 Ponte caída! Pule!',moving:false,isGround:true},
+    tronco:{w:44,h:14,damage:0,label:'🪵 Tronco caído',moving:false,solid:true},
+    lama:{w:50,h:6,damage:0,label:'Lama! Movimento lento',moving:false,slow:true},
+    sol:{w:100,h:80,damage:0,label:'☀️ Sol quente! Mova rápido!',moving:false,heat:true},
+    fumaca:{w:80,h:60,damage:0,label:'💨 Fumaça! Siga em frente!',moving:false,smoke:true},
+    formigueiro:{w:24,h:14,damage:1,label:'🐜 Formigueiro! Evite!',moving:false},
+    espinho:{w:32,h:10,damage:1,label:'🌵 Espinhos! Cuidado!',moving:false}
+  },
+
+  // ============================================
+  // PHASES DATA
+  // ============================================
+  phases: [
+    {
+      id: 0, name: 'Chegada ao Pantanal', icon: '🌅',
+      desc: 'Você é um pesquisador da UNEMAT chegando ao Pantanal. Explore o ambiente, conheça a paisagem e colete suas primeiras amostras.',
+      objectives: 'Explore a área, colete 3 amostras de solo e converse com o guia local.',
+      bgColor1: '#87CEEB', bgColor2: '#65B8E8',
+      groundColor: '#8D6E63', groundTop: '#81C784',
+      worldWidth: 2400,
+      summary: {
+        title: 'O que é o Pantanal?',
+        text: 'O Pantanal é a maior planície de inundação do planeta. Seus solos, suas águas e sua vegetação formam um sistema onde o carbono circula entre o ambiente e a atmosfera. Entender esse ciclo é essencial para conservar o Pantanal e enfrentar as mudanças climáticas. A universidade estuda esses processos e compartilha esse conhecimento com a sociedade.'
+      },
+      build: function(w) {
+        w.platforms = [
+          {x:0,y:420,w:600,h:180,color:'#6D4C41',top:'#81C784'},
+          {x:650,y:440,w:200,h:160,color:'#6D4C41',top:'#A5D6A7'},
+          {x:900,y:400,w:500,h:200,color:'#6D4C41',top:'#66BB6A'},
+          {x:1450,y:430,w:300,h:170,color:'#6D4C41',top:'#81C784'},
+          {x:1800,y:410,w:600,h:190,color:'#6D4C41',top:'#66BB6A'}
+        ];
+        w.decorations = [
+          {x:80,y:360,type:'tree'},{x:250,y:358,type:'bush'},
+          {x:420,y:362,type:'tree'},{x:550,y:365,type:'flower'},
+          {x:950,y:338,type:'tree'},{x:1100,y:342,type:'tree'},
+          {x:1250,y:345,type:'bush'},{x:1350,y:340,type:'flower'},
+          {x:1520,y:368,type:'tree'},{x:1850,y:348,type:'tree'},
+          {x:2050,y:352,type:'bush'},{x:2200,y:350,type:'tree'},
+          {x:160,y:360,type:'grass'},{x:340,y:363,type:'grass'},
+          {x:1000,y:340,type:'grass'},{x:1200,y:340,type:'grass'},
+          {x:1900,y:350,type:'grass'},{x:2100,y:352,type:'grass'}
+        ];
+        w.collectibles = [
+          {x:200,y:380,type:'soil',collected:false,label:'Amostra de Solo'},
+          {x:1000,y:360,type:'soil',collected:false,label:'Amostra de Solo'},
+          {x:1900,y:370,type:'soil',collected:false,label:'Amostra de Solo'},
+          {x:700,y:400,type:'leaf',collected:false,label:'Folha do Pantanal'}
+        ];
+        w.obstacles = [
+          {x:350,y:406,type:'jacare',originX:350},
+          {x:1150,y:388,type:'cobra',originX:1150},
+          {x:1400,y:420,type:'buraco',originX:1400},
+          {x:2000,y:398,type:'jacare',originX:2000},
+          {x:1700,y:396,type:'tronco',originX:1700}
+        ];
+        w.npcs = [
+          {x:470,y:374,type:'guide',name:'Seu Joaquim',avatar:'🧔',
+           icon:'👤',w:28,h:36,
+           dialogue:[
+             {text:'Bem-vindo ao Pantanal! Sou Joaquim, guia local. Aqui tudo se conecta: solo, água, vegetação e o ar que respiramos.',actions:[{label:'Continuar',next:1}]},
+             {text:'O carbono está em toda parte. No solo, nas plantas, na água. Quando a vegetação se decompõe, libera carbono para a atmosfera como CO₂ ou CH₄.',actions:[{label:'O que é CH₄?',next:2},{label:'Entendi!',next:3}]},
+             {text:'CH₄ é o metano, um gás que pode ser até 80 vezes mais potente que o CO₂ no aquecimento global. Áreas alagadas podem emitir bastante metano.',actions:[{label:'Interessante!',next:3}]},
+             {text:'Siga em frente, colete as amostras de solo marcadas com o ícone 🟫 e veja como os ambientes são diferentes. Boa exploração!',actions:[{label:'Vamos lá!',close:true}]}
+           ]},
+          {x:1550,y:384,type:'student',name:'Ana (Estudante)',avatar:'👩‍🎓',
+           icon:'👩',w:26,h:34,
+           dialogue:[
+             {text:'Oi! Sou Ana, estudante de biologia. Estou aqui aprendendo sobre coleta de amostras. Você pode me ajudar?',actions:[{label:'Claro!',next:1}]},
+             {text:'Para coletar solo corretamente, precisamos: 1) escolher o ponto, 2) limpar a superfície, 3) usar ferramentas limpas, 4) armazenar bem. A ordem importa!',
+              actions:[{label:'Faz sentido!',next:2}]},
+             {text:'Quando você tiver coletado 3 amostras, a primeira missão estará completa. O Pantanal tem muitos segredos no solo!',actions:[{label:'Obrigado!',close:true,reward:{science:5}}]}
+           ]}
+        ];
+      },
+      checkComplete: function(state) {
+        const collected = G.world.collectibles.filter(c=>c.collected&&c.type==='soil').length;
+        return collected >= 3;
+      },
+      onComplete: function() {
+        G.addScore('science',15);
+        G.addScore('community',5);
+        G.addScore('conservation',10);
+        G.unlockMedal('first_steps');
+      },
+      minigame: {
+        type:'quiz',
+        title:'Quiz: Primeiros Passos',
+        questions:[
+          {q:'O que é o carbono no ambiente?',opts:['Um elemento presente no solo, água, vegetação e atmosfera','Um tipo de rocha do Pantanal','Uma espécie de peixe','Um mineral raro'],correct:0,feedback:'O carbono é um elemento fundamental que circula entre solo, água, seres vivos e atmosfera. É a base da vida!'},
+          {q:'Qual gás pode ser até 80 vezes mais potente que o CO₂ no aquecimento?',opts:['Oxigênio (O₂)','Metano (CH₄)','Nitrogênio (N₂)','Hélio (He)'],correct:1,feedback:'O metano (CH₄) é produzido em ambientes com pouco oxigênio, como áreas alagadas. Tem efeito estufa muito mais forte que o CO₂.'},
+          {q:'Por que coletar amostras de solo é importante?',opts:['Para vender o solo','Para entender quanto carbono o solo armazena','Para construir casas','Para fazer artesanato'],correct:1,feedback:'O solo é um dos maiores reservatórios de carbono do planeta. Medir o carbono no solo ajuda a entender a saúde do ambiente.'}
+        ]
+      }
+    },
+    {
+      id: 1, name: 'Conhecendo os Ambientes', icon: '🌾',
+      desc: 'O Pantanal tem muitos ambientes diferentes. Cada um armazena e emite carbono de forma distinta. Explore e compare!',
+      objectives: 'Visite 4 ambientes diferentes e compare os níveis de emissão de carbono.',
+      bgColor1: '#90CAF9', bgColor2: '#64B5F6',
+      groundColor: '#795548', groundTop: '#AED581',
+      worldWidth: 3000,
+      summary: {
+        title: 'Ambientes e Carbono',
+        text: 'Solo exposto, campo com gramíneas, área com folhiço e área alagada emitem carbono de formas diferentes. Solos com mais matéria orgânica e umidade tendem a ter emissões maiores. Áreas alagadas podem emitir mais metano porque a decomposição acontece sem oxigênio. Essa diversidade é o que torna o Pantanal tão especial e importante para o clima global.'
+      },
+      build: function(w) {
+        // 4 distinct environments
+        w.platforms = [
+          // Exposed soil
+          {x:0,y:430,w:600,h:170,color:'#A1887F',top:'#BCAAA4',env:'solo_exposto',envLabel:'Solo Exposto',envIcon:'🏜️'},
+          // Grassland
+          {x:700,y:420,w:600,h:180,color:'#6D4C41',top:'#8BC34A',env:'campo',envLabel:'Campo com Gramíneas',envIcon:'🌾'},
+          // Leaf litter
+          {x:1400,y:410,w:600,h:190,color:'#5D4037',top:'#A1887F',env:'folhico',envLabel:'Área com Folhiço',envIcon:'🍂'},
+          // Flooded
+          {x:2100,y:440,w:700,h:160,color:'#37474F',top:'#4FC3F7',env:'alagado',envLabel:'Área Alagada',envIcon:'💧'}
+        ];
+        w.decorations = [
+          {x:100,y:372,type:'rock'},{x:300,y:375,type:'rock'},{x:450,y:370,type:'deadtree'},
+          {x:800,y:358,type:'grass'},{x:950,y:360,type:'grass'},{x:1100,y:362,type:'bush'},{x:1200,y:355,type:'grass'},
+          {x:1500,y:348,type:'tree'},{x:1650,y:350,type:'tree'},{x:1800,y:352,type:'bush'},{x:1900,y:346,type:'tree'},
+          {x:2200,y:378,type:'reed'},{x:2400,y:380,type:'reed'},{x:2550,y:382,type:'reed'},{x:2650,y:375,type:'reed'}
+        ];
+        w.collectibles = [
+          {x:300,y:390,type:'measure',collected:false,label:'Medição Solo Exposto',env:'solo_exposto'},
+          {x:1000,y:380,type:'measure',collected:false,label:'Medição Campo',env:'campo'},
+          {x:1700,y:370,type:'measure',collected:false,label:'Medição Folhiço',env:'folhico'},
+          {x:2400,y:400,type:'measure',collected:false,label:'Medição Área Alagada',env:'alagado'}
+        ];
+        w.obstacles = [
+          {x:200,y:416,type:'aranha',originX:200},
+          {x:500,y:424,type:'lama',originX:500},
+          {x:850,y:406,type:'onca',originX:850},
+          {x:1200,y:400,type:'tronco',originX:1200},
+          {x:1550,y:398,type:'cobra',originX:1550},
+          {x:1950,y:400,type:'espinho',originX:1950},
+          {x:2300,y:426,type:'jacare',originX:2300},
+          {x:2600,y:434,type:'lama',originX:2600}
+        ];
+        w.npcs = [
+          {x:150,y:384,type:'researcher',name:'Prof. Marcos',avatar:'👨‍🔬',icon:'👨',w:28,h:36,
+           dialogue:[
+             {text:'Cada ambiente do Pantanal tem uma "assinatura" de carbono diferente. Solo exposto, campo, folhiço e área alagada liberam CO₂ e CH₄ em quantidades distintas.',actions:[{label:'Como medir?',next:1}]},
+             {text:'Usamos câmaras de fluxo no campo. Elas capturam os gases que saem do solo. Depois, analisamos no laboratório para saber as taxas de emissão.',actions:[{label:'Vou explorar!',close:true,reward:{science:5}}]}
+           ]},
+          {x:2300,y:394,type:'fisher',name:'Dona Maria (Pescadora)',avatar:'👩‍🌾',icon:'👩',w:26,h:34,
+           dialogue:[
+             {text:'Sou pescadora aqui há 30 anos. Percebo que as cheias mudaram. O povo daqui sente as mudanças no ambiente antes dos cientistas medirem.',actions:[{label:'Isso é importante!',next:1}]},
+             {text:'Por isso a universidade precisa ouvir a gente. Nós sabemos coisas que nenhum aparelho mede. E vocês sabem explicar por que as coisas estão mudando.',actions:[{label:'Juntos somos mais fortes!',close:true,reward:{community:10}}]}
+           ]}
+        ];
+      },
+      checkComplete: function() {
+        return G.world.collectibles.filter(c=>c.collected&&c.type==='measure').length >= 4;
+      },
+      onComplete: function() {
+        G.addScore('science',20);
+        G.addScore('conservation',10);
+        G.unlockMedal('env_explorer');
+      },
+      minigame: {
+        type:'match',
+        title:'Associe Ambiente e Emissão',
+        desc:'Conecte cada ambiente ao seu nível típico de emissão de CO₂:',
+        pairs:[
+          {left:'🏜️ Solo Exposto',right:'Baixo (50-150 mg/m²/dia)'},
+          {left:'🌾 Campo',right:'Moderado (200-500 mg/m²/dia)'},
+          {left:'🍂 Folhiço',right:'Alto (400-900 mg/m²/dia)'},
+          {left:'💧 Área Alagada',right:'Variável + CH₄ elevado'}
+        ]
+      }
+    },
+    {
+      id: 2, name: 'Pontos de Coleta', icon: '📍',
+      desc: 'Escolher onde coletar é tão importante quanto coletar. Aprenda a selecionar pontos representativos no Pantanal.',
+      objectives: 'Encontre e marque 3 pontos ideais de coleta e evite os pontos inadequados.',
+      bgColor1: '#80DEEA', bgColor2: '#4DD0E1',
+      groundColor: '#795548', groundTop: '#81C784',
+      worldWidth: 2800,
+      summary: {
+        title: 'Amostragem Representativa',
+        text: 'Em pesquisa ambiental, os pontos de coleta precisam representar bem o ambiente estudado. Não basta coletar em qualquer lugar. É preciso considerar a distância de interferências, a representatividade do ambiente e a segurança do local. Uma boa amostragem garante dados confiáveis para a ciência e para as decisões de conservação.'
+      },
+      build: function(w) {
+        w.platforms = [
+          {x:0,y:420,w:500,h:180,color:'#6D4C41',top:'#81C784'},
+          {x:550,y:430,w:400,h:170,color:'#6D4C41',top:'#A5D6A7'},
+          {x:1000,y:410,w:500,h:190,color:'#795548',top:'#66BB6A'},
+          {x:1550,y:440,w:350,h:160,color:'#5D4037',top:'#AED581'},
+          {x:1950,y:400,w:500,h:200,color:'#6D4C41',top:'#81C784'},
+          {x:2500,y:420,w:300,h:180,color:'#6D4C41',top:'#66BB6A'}
+        ];
+        w.decorations = [
+          {x:100,y:358,type:'tree'},{x:300,y:362,type:'bush'},{x:700,y:370,type:'grass'},
+          {x:1100,y:348,type:'tree'},{x:1300,y:350,type:'tree'},{x:1600,y:378,type:'bush'},
+          {x:2100,y:338,type:'tree'},{x:2300,y:342,type:'tree'},{x:2600,y:362,type:'bush'}
+        ];
+        w.collectibles = [
+          {x:250,y:380,type:'goodpoint',collected:false,label:'✅ Ponto representativo'},
+          {x:650,y:390,type:'badpoint',collected:false,label:'❌ Muito perto da estrada'},
+          {x:1200,y:370,type:'goodpoint',collected:false,label:'✅ Ambiente preservado'},
+          {x:1600,y:400,type:'badpoint',collected:false,label:'❌ Área pisoteada por gado'},
+          {x:2200,y:360,type:'goodpoint',collected:false,label:'✅ Vegetação representativa'},
+          {x:2600,y:380,type:'badpoint',collected:false,label:'❌ Próximo a lixo despejado'}
+        ];
+        w.obstacles = [
+          {x:420,y:412,type:'buraco',originX:420},
+          {x:800,y:422,type:'ponte',originX:800},
+          {x:1050,y:398,type:'cobra',originX:1050},
+          {x:1450,y:428,type:'tronco',originX:1450},
+          {x:1900,y:392,type:'buraco',originX:1900},
+          {x:2400,y:408,type:'aranha',originX:2400}
+        ];
+        w.npcs = [
+          {x:80,y:374,type:'professor',name:'Profa. Lúcia',avatar:'👩‍🏫',icon:'👩',w:26,h:34,
+           dialogue:[
+             {text:'Hoje vamos aprender sobre amostragem. Nem todo ponto é bom para coleta. Veja os pontos marcados e identifique quais são adequados!',actions:[{label:'Entendi!',next:1}]},
+             {text:'Pontos ideais: longe de interferências, em áreas representativas e seguras. Evite: locais pisoteados, perto de estradas ou contaminados.',actions:[{label:'Vou explorar!',close:true}]}
+           ]},
+          {x:1100,y:364,type:'elder',name:'Seu Antônio (Ribeirinho)',avatar:'👴',icon:'👴',w:28,h:36,
+           dialogue:[
+             {text:'Moro aqui há 50 anos. Conheço cada canto desse Pantanal. Posso indicar os lugares que mais mudaram e os que continuam preservados.',actions:[{label:'Isso ajuda muito!',next:1}]},
+             {text:'O conhecimento do povo local é valioso para a ciência. Sabemos onde a terra é boa, onde alaga, onde o fogo passou. Escutem a gente!',actions:[{label:'Vamos trabalhar juntos!',close:true,reward:{community:10,science:5}}]}
+           ]}
+        ];
+      },
+      checkComplete: function() {
+        const good = G.world.collectibles.filter(c=>c.collected&&c.type==='goodpoint').length;
+        return good >= 3;
+      },
+      onComplete: function() {
+        G.addScore('science',15);G.addScore('community',10);G.addScore('conservation',5);
+        G.unlockMedal('sampler');
+      },
+      minigame: {
+        type:'quiz',
+        title:'Quiz: Escolhendo Pontos',
+        questions:[
+          {q:'Qual destes NÃO é um bom critério para escolher um ponto de coleta?',opts:['Representatividade do ambiente','Distância de interferências humanas','Proximidade com uma estrada movimentada','Segurança para o pesquisador'],correct:2,feedback:'Pontos próximos a estradas podem ter contaminação e interferência. Um bom ponto deve representar o ambiente natural.'},
+          {q:'Por que o conhecimento local dos ribeirinhos é importante para a pesquisa?',opts:['Não é importante','Eles conhecem o histórico ambiental da região','Apenas para fins turísticos','Para substituir equipamentos'],correct:1,feedback:'Os moradores locais conhecem a história do ambiente, as mudanças sazonais e os locais preservados, complementando os dados científicos.'}
+        ]
+      }
+    },
+    {
+      id: 3, name: 'Conversando com a Comunidade', icon: '🤝',
+      desc: 'A ciência precisa dialogar com a sociedade. Converse com moradores e entenda como o conhecimento científico pode ajudar a comunidade.',
+      objectives: 'Converse com 4 moradores e construa confiança com a comunidade.',
+      bgColor1: '#FFE0B2', bgColor2: '#FFCC80',
+      groundColor: '#8D6E63', groundTop: '#A5D6A7',
+      worldWidth: 2600,
+      summary: {
+        title: 'Ciência e Sociedade',
+        text: 'A universidade não produz conhecimento apenas para si mesma. Ela aprende com a sociedade, dialoga com ela e devolve soluções, compreensão e cuidado ambiental. Cada pessoa da comunidade carrega saberes valiosos. Quando ciência e sociedade trabalham juntas, a conservação é mais efetiva e duradoura.'
+      },
+      build: function(w) {
+        w.platforms = [
+          {x:0,y:430,w:2600,h:170,color:'#8D6E63',top:'#A5D6A7'}
+        ];
+        w.decorations = [
+          {x:100,y:368,type:'house'},{x:500,y:366,type:'house'},{x:900,y:370,type:'tree'},
+          {x:1200,y:368,type:'house'},{x:1600,y:364,type:'tree'},{x:1800,y:366,type:'house'},
+          {x:2100,y:370,type:'tree'},{x:2350,y:368,type:'bush'},
+          {x:300,y:372,type:'grass'},{x:700,y:370,type:'flower'},{x:1400,y:372,type:'grass'},{x:2000,y:370,type:'flower'}
+        ];
+        w.collectibles = [];
+        w.obstacles = [
+          {x:350,y:350,type:'sol',originX:350},
+          {x:750,y:370,type:'fumaca',originX:750},
+          {x:1050,y:418,type:'formigueiro',originX:1050},
+          {x:1450,y:350,type:'sol',originX:1450},
+          {x:1700,y:360,type:'fumaca',originX:1700},
+          {x:2200,y:424,type:'lama',originX:2200}
+        ];
+        w.npcs = [
+          {x:200,y:384,type:'farmer',name:'Seu Carlos (Agricultor)',avatar:'👨‍🌾',icon:'👨',w:28,h:36,
+           dialogue:[
+             {text:'Planto aqui faz 20 anos. Sei que o fogo limpa o pasto, mas também sei que queimada demais estraga tudo. O que a ciência diz sobre isso?',actions:[{label:'O fogo tem dois lados',next:1}]},
+             {text:'O fogo controlado pode fazer parte do manejo, mas o fogo descontrolado destrói matéria orgânica, emite muito carbono e prejudica o solo por anos.',actions:[{label:'Isso explica muita coisa!',next:2}]},
+             {text:'Vou pensar melhor antes de queimar. Se a universidade puder ajudar com alternativas, estou aberto.',actions:[{label:'Conte com a gente!',close:true,reward:{community:15}}]}
+           ]},
+          {x:600,y:384,type:'child',name:'Pedro (Criança)',avatar:'👦',icon:'👦',w:22,h:30,
+           dialogue:[
+             {text:'Moço, o que é carbono? Minha professora falou, mas não entendi direito.',actions:[{label:'Vou explicar!',next:1}]},
+             {text:'O carbono é como um ingrediente que está em tudo que é vivo. Nas plantas, nos animais, no solo, na água. É como um tijolinho da vida!',actions:[{label:'Ah, entendi!',next:2}]},
+             {text:'Quando a gente queima algo, esse tijolinho sai como fumaça para o ar. E daí esquenta o planeta. Por isso precisamos cuidar da natureza.',actions:[{label:'Legal, vou contar na escola!',close:true,reward:{community:10,science:5}}]}
+           ]},
+          {x:1300,y:384,type:'artisan',name:'Dona Rosa (Artesã)',avatar:'👵',icon:'👵',w:26,h:34,
+           dialogue:[
+             {text:'Faço artesanato com materiais do Pantanal. Mas com as queimadas, muita coisa sumiu. As palmeiras que uso para trançar estão mais difíceis de encontrar.',actions:[{label:'Isso é sério!',next:1}]},
+             {text:'A degradação ambiental afeta diretamente a cultura e o sustento das comunidades. Conservar o Pantanal é preservar também os modos de vida.',actions:[{label:'Concordo!',close:true,reward:{community:10,conservation:10}}]}
+           ]},
+          {x:1900,y:384,type:'health',name:'Marina (Agente de Saúde)',avatar:'👩‍⚕️',icon:'👩',w:26,h:34,
+           dialogue:[
+             {text:'Nas épocas de queimada, os casos de problemas respiratórios aumentam muito, especialmente em crianças e idosos.',actions:[{label:'Qual a relação?',next:1}]},
+             {text:'A fumaça carrega partículas finas (PM2.5) que entram nos pulmões. Quanto mais fogo, pior a qualidade do ar. A saúde e o ambiente estão conectados.',actions:[{label:'A ciência confirma isso!',next:2}]},
+             {text:'É importante que a universidade divulgue esses dados para a população e para os gestores. Informação salva vidas.',actions:[{label:'Vamos divulgar!',close:true,reward:{science:5,community:15}}]}
+           ]}
+        ];
+      },
+      checkComplete: function() {
+        const talked = G.world.npcs.filter(n=>n._talked).length;
+        return talked >= 4;
+      },
+      onComplete: function() {
+        G.addScore('community',20);G.addScore('science',5);
+        G.unlockMedal('communicator');
+      },
+      minigame: {
+        type:'quiz',
+        title:'Quiz: Ciência e Comunidade',
+        questions:[
+          {q:'Por que a universidade precisa dialogar com a sociedade?',opts:['Não precisa, basta publicar artigos','Para aprender com os saberes locais e devolver conhecimento','Apenas para fazer propaganda','Para substituir o conhecimento popular'],correct:1,feedback:'A extensão universitária é uma via de mão dupla: a universidade aprende com a comunidade e devolve conhecimento de forma acessível.'},
+          {q:'Como as queimadas afetam a saúde das pessoas?',opts:['Não afetam','A fumaça contém partículas finas que causam problemas respiratórios','Apenas causam calor','Só afetam os animais'],correct:1,feedback:'As queimadas liberam PM2.5, partículas que entram no sistema respiratório e aumentam doenças, especialmente em crianças e idosos.'}
+        ]
+      }
+    },
+    {
+      id: 4, name: 'Carbono no Solo', icon: '🟫',
+      desc: 'O solo é um dos maiores reservatórios de carbono do planeta. Entenda como diferentes coberturas vegetais afetam o armazenamento de carbono.',
+      objectives: 'Analise 3 tipos de solo e monte a cadeia do carbono.',
+      bgColor1: '#A5D6A7', bgColor2: '#81C784',
+      groundColor: '#5D4037', groundTop: '#8BC34A',
+      worldWidth: 2400,
+      summary: {
+        title: 'Solo e Carbono',
+        text: 'O solo armazena mais carbono que toda a vegetação terrestre e a atmosfera juntos. A matéria orgânica no solo vem de folhas, raízes e organismos mortos que se decompõem lentamente. Solos saudáveis armazenam mais carbono. Degradação, queimadas e desmatamento liberam esse carbono de volta para a atmosfera, contribuindo para as mudanças climáticas.'
+      },
+      build: function(w) {
+        w.platforms = [
+          {x:0,y:420,w:700,h:180,color:'#3E2723',top:'#8BC34A'},
+          {x:800,y:430,w:600,h:170,color:'#4E342E',top:'#BCAAA4'},
+          {x:1500,y:410,w:600,h:190,color:'#5D4037',top:'#A1887F'},
+          {x:2150,y:420,w:250,h:180,color:'#3E2723',top:'#66BB6A'}
+        ];
+        w.decorations = [
+          {x:100,y:358,type:'tree'},{x:300,y:360,type:'tree'},{x:500,y:362,type:'bush'},
+          {x:900,y:370,type:'deadtree'},{x:1100,y:372,type:'rock'},{x:1300,y:368,type:'rock'},
+          {x:1600,y:350,type:'tree'},{x:1800,y:348,type:'tree'},{x:2000,y:352,type:'bush'}
+        ];
+        w.collectibles = [
+          {x:350,y:380,type:'carbon',collected:false,label:'Carbono em Solo Vegetado: alto armazenamento'},
+          {x:1050,y:390,type:'carbon',collected:false,label:'Carbono em Solo Exposto: baixo armazenamento'},
+          {x:1750,y:370,type:'carbon',collected:false,label:'Carbono em Solo com Folhiço: muito alto'}
+        ];
+        w.npcs = [
+          {x:150,y:374,type:'researcher',name:'Dr. Paulo',avatar:'👨‍🔬',icon:'👨',w:28,h:36,
+           dialogue:[
+             {text:'O solo é como uma esponja de carbono. Quanto mais matéria orgânica, mais carbono ele guarda. Vamos ver as diferenças entre esses três tipos de solo!',actions:[{label:'Vamos!',close:true,reward:{science:10}}]}
+           ]}
+        ];
+      },
+      checkComplete: function() {
+        return G.world.collectibles.filter(c=>c.collected&&c.type==='carbon').length>=3;
+      },
+      onComplete: function() {
+        G.addScore('science',20);G.addScore('conservation',15);
+        G.unlockMedal('soil_expert');
+      },
+      minigame: {
+        type:'sequence',
+        title:'Monte a Cadeia do Carbono',
+        desc:'Arraste os blocos na ordem correta para montar o ciclo do carbono no solo:',
+        items:['Plantas absorvem CO₂','Folhas e raízes caem no solo','Micro-organismos decompõem','Carbono é armazenado no solo','Parte volta como CO₂'],
+        correctOrder:[0,1,2,3,4]
+      }
+    },
+    {
+      id: 5, name: 'Áreas Alagadas e Metano', icon: '💧',
+      desc: 'As áreas alagadas do Pantanal são fontes importantes de metano. Entenda por que e como isso se conecta ao clima.',
+      objectives: 'Explore a área alagada, colete dados de CH₄ e entenda a decomposição anaeróbica.',
+      bgColor1: '#81D4FA', bgColor2: '#4FC3F7',
+      groundColor: '#37474F', groundTop: '#4DB6AC',
+      worldWidth: 2600,
+      summary: {
+        title: 'Áreas Alagadas e Metano',
+        text: 'Quando o solo fica submerso, o oxigênio diminui. Nessas condições, micro-organismos especiais decompõem matéria orgânica e produzem metano (CH₄). O Pantanal, com seus ciclos de cheia e seca, é uma fonte natural de metano. Entender essas emissões é fundamental para modelar o clima e para que a sociedade compreenda a importância de conservar essas áreas.'
+      },
+      build: function(w) {
+        w.platforms = [
+          {x:0,y:420,w:500,h:180,color:'#37474F',top:'#80CBC4'},
+          {x:550,y:450,w:400,h:150,color:'#263238',top:'#4FC3F7'},
+          {x:1000,y:440,w:500,h:160,color:'#263238',top:'#4DD0E1'},
+          {x:1550,y:430,w:400,h:170,color:'#37474F',top:'#80CBC4'},
+          {x:2000,y:420,w:600,h:180,color:'#37474F',top:'#A5D6A7'}
+        ];
+        w.decorations = [
+          {x:100,y:358,type:'reed'},{x:300,y:360,type:'reed'},{x:450,y:356,type:'bush'},
+          {x:600,y:388,type:'reed'},{x:800,y:390,type:'reed'},
+          {x:1100,y:378,type:'reed'},{x:1300,y:380,type:'reed'},{x:1400,y:376,type:'reed'},
+          {x:1600,y:368,type:'tree'},{x:1800,y:370,type:'bush'},
+          {x:2200,y:358,type:'tree'},{x:2400,y:360,type:'tree'}
+        ];
+        w.collectibles = [
+          {x:300,y:380,type:'methane',collected:false,label:'Bolhas de metano na superfície'},
+          {x:750,y:410,type:'methane',collected:false,label:'Emissão de CH₄: 15 mg/m²/dia'},
+          {x:1250,y:400,type:'methane',collected:false,label:'Emissão de CH₄: 42 mg/m²/dia'}
+        ];
+        w.obstacles = [
+          {x:200,y:406,type:'jacare',originX:200},
+          {x:500,y:438,type:'lama',originX:500},
+          {x:850,y:428,type:'jacare',originX:850},
+          {x:1150,y:428,type:'cobra',originX:1150},
+          {x:1500,y:418,type:'tronco',originX:1500},
+          {x:1900,y:408,type:'jacare',originX:1900}
+        ];
+        w.npcs = [
+          {x:80,y:374,type:'researcher',name:'Dra. Carla',avatar:'👩‍🔬',icon:'👩',w:26,h:34,
+           dialogue:[
+             {text:'Áreas alagadas produzem metano! Quando o solo fica debaixo da água, a decomposição da matéria orgânica acontece sem oxigênio.',actions:[{label:'Entendi!',next:1}]},
+             {text:'Isso gera CH₄ em vez de CO₂. O metano é muito mais potente como gás estufa. Mas essas áreas também armazenam muito carbono no sedimento.',actions:[{label:'Então é bom e ruim?',next:2}]},
+             {text:'Exatamente! As áreas alagadas são complexas. Por um lado emitem metano, por outro armazenam carbono. Por isso estudá-las é tão importante.',actions:[{label:'Fascinante!',close:true,reward:{science:15}}]}
+           ]},
+          {x:2100,y:374,type:'fisher',name:'Seu Raimundo (Pescador)',avatar:'🧔',icon:'👨',w:28,h:36,
+           dialogue:[
+             {text:'Pesco aqui a vida toda. Quando a água esquenta e baixa, as bolhas no rio aumentam. Vocês dizem que é metano, né?',actions:[{label:'Isso mesmo!',next:1}]},
+             {text:'O saber popular confirma o que medimos com instrumentos. Quando a água fica rasa e quente, a decomposição aumenta e mais metano sobe.',actions:[{label:'Ciência e vivência juntas!',close:true,reward:{community:10}}]}
+           ]}
+        ];
+      },
+      checkComplete: function() {
+        return G.world.collectibles.filter(c=>c.collected&&c.type==='methane').length>=3;
+      },
+      onComplete: function() {
+        G.addScore('science',20);G.addScore('conservation',10);
+        G.unlockMedal('methane_hunter');
+      },
+      minigame: {
+        type:'quiz',
+        title:'Quiz: Metano e Áreas Alagadas',
+        questions:[
+          {q:'Por que áreas alagadas produzem metano?',opts:['Porque a água é suja','Porque a decomposição ocorre sem oxigênio','Porque os peixes produzem metano','Porque o sol aquece a lama'],correct:1,feedback:'Quando o solo fica submerso, micro-organismos anaeróbicos decompõem matéria orgânica e produzem metano (CH₄) em vez de CO₂.'},
+          {q:'O metano é quantas vezes mais potente que o CO₂ como gás estufa (em 20 anos)?',opts:['2 vezes','10 vezes','Até 80 vezes','Menos potente'],correct:2,feedback:'O CH₄ tem potencial de aquecimento global até 80 vezes maior que o CO₂ em um período de 20 anos, tornando-o um gás de efeito estufa muito poderoso.'}
+        ]
+      }
+    },
+    {
+      id: 6, name: 'Fogo e Impactos', icon: '🔥',
+      desc: 'O fogo é uma realidade no Pantanal. Aprenda sobre seus impactos no carbono, no solo, na vegetação e na saúde das pessoas.',
+      objectives: 'Identifique impactos do fogo, ajude na prevenção e entenda a relação fogo-carbono.',
+      bgColor1: '#FFCCBC', bgColor2: '#FFAB91',
+      groundColor: '#3E2723', groundTop: '#757575',
+      worldWidth: 2800,
+      summary: {
+        title: 'Fogo no Pantanal',
+        text: 'O fogo pode ser natural ou causado por ação humana. Queimadas descontroladas liberam enormes quantidades de carbono, destroem a matéria orgânica do solo, prejudicam a qualidade do ar e ameaçam a saúde das comunidades. A recuperação do solo após o fogo leva anos. Prevenir queimadas, manejar o fogo de forma responsável e restaurar áreas degradadas são ações que protegem o carbono e as pessoas.'
+      },
+      build: function(w) {
+        w.platforms = [
+          {x:0,y:420,w:600,h:180,color:'#3E2723',top:'#66BB6A'},
+          {x:700,y:430,w:700,h:170,color:'#212121',top:'#616161'},
+          {x:1500,y:420,w:600,h:180,color:'#33691E',top:'#AED581'},
+          {x:2200,y:430,w:600,h:170,color:'#3E2723',top:'#81C784'}
+        ];
+        w.decorations = [
+          {x:100,y:358,type:'tree'},{x:300,y:360,type:'bush'},{x:450,y:355,type:'tree'},
+          {x:800,y:368,type:'burnedtree'},{x:1000,y:370,type:'burnedtree'},{x:1200,y:372,type:'burnedtree'},
+          {x:850,y:374,type:'fire'},{x:1050,y:374,type:'fire'},{x:1150,y:374,type:'smoke'},
+          {x:1600,y:358,type:'tree'},{x:1800,y:360,type:'tree'},{x:1950,y:356,type:'bush'},
+          {x:2300,y:368,type:'tree'},{x:2500,y:370,type:'bush'},{x:2650,y:365,type:'tree'}
+        ];
+        w.collectibles = [
+          {x:900,y:390,type:'firedata',collected:false,label:'Solo queimado: carbono perdido'},
+          {x:1100,y:390,type:'firedata',collected:false,label:'Cinzas: nutrientes mas também danos'},
+          {x:1700,y:380,type:'seedling',collected:false,label:'Muda para restauração'}
+        ];
+        w.obstacles = [
+          {x:750,y:360,type:'fumaca',originX:750},
+          {x:950,y:360,type:'fumaca',originX:950},
+          {x:1150,y:350,type:'sol',originX:1150},
+          {x:1350,y:408,type:'espinho',originX:1350},
+          {x:2000,y:418,type:'tronco',originX:2000},
+          {x:2400,y:418,type:'aranha',originX:2400}
+        ];
+        w.npcs = [
+          {x:200,y:374,type:'brigadist',name:'João (Brigadista)',avatar:'🧑‍🚒',icon:'🧑',w:28,h:36,
+           dialogue:[
+             {text:'Sou brigadista voluntário. Todo ano enfrentamos queimadas. Em 2020, o Pantanal queimou como nunca. Perdemos muita vegetação e fauna.',actions:[{label:'O que podemos fazer?',next:1}]},
+             {text:'Prevenção é o mais importante. Aceiros, monitoramento, educação da comunidade e manejo integrado do fogo. A universidade pode ajudar muito!',actions:[{label:'Vamos trabalhar juntos!',close:true,reward:{community:10,conservation:15}}]}
+           ]},
+          {x:1650,y:374,type:'researcher',name:'Profa. Felícia',avatar:'👩‍🔬',icon:'👩',w:26,h:34,
+           dialogue:[
+             {text:'Estudo os efeitos das cinzas no solo e na água. Após queimadas, as cinzas mudam a química do solo e podem contaminar rios e lagoas.',actions:[{label:'E o carbono?',next:1}]},
+             {text:'O fogo libera carbono armazenado no solo e na vegetação. Um solo que levou décadas para acumular carbono pode perder tudo em horas de queimada.',actions:[{label:'Precisamos proteger o solo!',close:true,reward:{science:15,conservation:10}}]}
+           ]}
+        ];
+      },
+      checkComplete: function() {
+        const fire = G.world.collectibles.filter(c=>c.collected&&c.type==='firedata').length;
+        const seed = G.world.collectibles.filter(c=>c.collected&&c.type==='seedling').length;
+        return fire>=2 && seed>=1;
+      },
+      onComplete: function() {
+        G.addScore('science',15);G.addScore('conservation',25);
+        G.unlockMedal('fire_fighter');
+      },
+      minigame: {
+        type:'quiz',
+        title:'Quiz: Fogo e Carbono',
+        questions:[
+          {q:'O que acontece com o carbono do solo durante uma queimada?',opts:['Fica mais protegido','É liberado para a atmosfera como CO₂','Se transforma em diamante','Não é afetado'],correct:1,feedback:'O fogo queima a matéria orgânica e libera o carbono armazenado de volta para a atmosfera, empobrecendo o solo.'},
+          {q:'Qual a melhor estratégia contra queimadas no Pantanal?',opts:['Proibir toda forma de fogo','Prevenção, manejo integrado e educação comunitária','Deixar queimar naturalmente','Usar avião para apagar'],correct:1,feedback:'A combinação de prevenção, manejo integrado e educação é a abordagem mais eficaz e sustentável para lidar com o fogo no Pantanal.'}
+        ]
+      }
+    },
+    {
+      id: 7, name: 'Restauração Ambiental', icon: '🌱',
+      desc: 'Áreas degradadas podem ser recuperadas. Aprenda sobre restauração e como ela ajuda a devolver carbono ao solo.',
+      objectives: 'Plante mudas, restaure uma área degradada e converse com quem trabalha nisso.',
+      bgColor1: '#C8E6C9', bgColor2: '#A5D6A7',
+      groundColor: '#5D4037', groundTop: '#81C784',
+      worldWidth: 2400,
+      summary: {
+        title: 'Restauração e Esperança',
+        text: 'Restaurar áreas degradadas é devolver vida e carbono ao solo. Plantar árvores nativas, proteger nascentes e recuperar matas ciliares são ações que levam anos, mas transformam a paisagem. A restauração reforça os serviços ambientais: regulação do clima, proteção da água, conservação da biodiversidade. É ciência aplicada para o bem da sociedade.'
+      },
+      build: function(w) {
+        w.platforms = [
+          {x:0,y:430,w:800,h:170,color:'#795548',top:'#BCAAA4'},
+          {x:900,y:420,w:600,h:180,color:'#5D4037',top:'#AED581'},
+          {x:1600,y:410,w:800,h:190,color:'#4E342E',top:'#66BB6A'}
+        ];
+        w.decorations = [
+          {x:100,y:368,type:'deadtree'},{x:300,y:372,type:'rock'},{x:500,y:374,type:'deadtree'},
+          {x:1000,y:358,type:'sapling'},{x:1200,y:356,type:'sapling'},{x:1350,y:360,type:'bush'},
+          {x:1700,y:348,type:'tree'},{x:1900,y:350,type:'tree'},{x:2100,y:346,type:'tree'},{x:2300,y:352,type:'bush'}
+        ];
+        w.collectibles = [
+          {x:200,y:390,type:'seedling',collected:false,label:'🌱 Muda de ipê'},
+          {x:400,y:390,type:'seedling',collected:false,label:'🌱 Muda de buriti'},
+          {x:1100,y:380,type:'seedling',collected:false,label:'🌱 Muda de aroeira'},
+          {x:1400,y:380,type:'water',collected:false,label:'💧 Proteção de nascente'}
+        ];
+        w.obstacles = [
+          {x:250,y:418,type:'buraco',originX:250},
+          {x:600,y:418,type:'tronco',originX:600},
+          {x:850,y:410,type:'espinho',originX:850},
+          {x:1050,y:408,type:'cobra',originX:1050},
+          {x:1500,y:398,type:'lama',originX:1500},
+          {x:2150,y:398,type:'onca',originX:2150}
+        ];
+        w.npcs = [
+          {x:700,y:384,type:'elder',name:'Dona Tereza (Viveirista)',avatar:'👵',icon:'👵',w:26,h:34,
+           dialogue:[
+             {text:'Cultivo mudas nativas há 15 anos. Cada muda que planto é esperança de que o Pantanal vai se recuperar.',actions:[{label:'Quantas mudas?',next:1}]},
+             {text:'Já produzi mais de 50 mil mudas! Ipê, buriti, aroeira, paratudo... Quando uma muda cresce, ela começa a guardar carbono no tronco, nas raízes e no solo.',actions:[{label:'Inspirador!',close:true,reward:{community:10,conservation:15}}]}
+           ]},
+          {x:1800,y:364,type:'researcher',name:'Dr. Rafael',avatar:'👨‍🔬',icon:'👨',w:28,h:36,
+           dialogue:[
+             {text:'A restauração funciona! Em 10-15 anos, uma área restaurada pode armazenar quantidades significativas de carbono novamente.',actions:[{label:'E os outros benefícios?',next:1}]},
+             {text:'Além do carbono: proteção da água, retorno da biodiversidade, regulação do microclima, prevenção de erosão. A restauração é uma das melhores soluções para o clima.',actions:[{label:'A natureza se recupera!',close:true,reward:{science:10,conservation:10}}]}
+           ]}
+        ];
+      },
+      checkComplete: function() {
+        return G.world.collectibles.filter(c=>c.collected).length>=4;
+      },
+      onComplete: function() {
+        G.addScore('conservation',30);G.addScore('community',10);
+        G.unlockMedal('restorer');
+      },
+      minigame: {
+        type:'quiz',
+        title:'Quiz: Restauração',
+        questions:[
+          {q:'Quanto tempo uma área restaurada leva para acumular carbono significativo?',opts:['1 mês','1 ano','10-15 anos','Nunca recupera'],correct:2,feedback:'A restauração é um processo que leva anos, mas em 10-15 anos, árvores e solo começam a acumular quantidades importantes de carbono.'},
+          {q:'Quais benefícios a restauração traz além do armazenamento de carbono?',opts:['Nenhum outro','Proteção da água, biodiversidade e regulação do clima','Apenas beleza visual','Só benefícios econômicos'],correct:1,feedback:'A restauração gera múltiplos benefícios: proteção hídrica, retorno da fauna e flora, regulação do microclima e prevenção de erosão.'}
+        ]
+      }
+    },
+    {
+      id: 8, name: 'Ciência na Escola', icon: '🏫',
+      desc: 'Leve o conhecimento sobre carbono e Pantanal para uma escola local. Ensinar é a melhor forma de aprender!',
+      objectives: 'Prepare uma apresentação simples e ensine crianças sobre carbono no Pantanal.',
+      bgColor1: '#FFF9C4', bgColor2: '#FFF176',
+      groundColor: '#8D6E63', groundTop: '#C8E6C9',
+      worldWidth: 2200,
+      summary: {
+        title: 'Levar Ciência para a Escola',
+        text: 'Quando um pesquisador entra em uma escola e explica o que faz, acontece algo mágico: crianças e jovens descobrem que a ciência é acessível, é real e está perto delas. Elas percebem que podem ser pesquisadoras, cuidar do ambiente e mudar o mundo. Esse é o poder da extensão universitária: criar pontes entre conhecimento e sociedade.'
+      },
+      build: function(w) {
+        w.platforms = [
+          {x:0,y:430,w:2200,h:170,color:'#8D6E63',top:'#C8E6C9'}
+        ];
+        w.decorations = [
+          {x:200,y:368,type:'school'},{x:800,y:368,type:'house'},
+          {x:1200,y:365,type:'tree'},{x:1500,y:368,type:'tree'},
+          {x:1800,y:370,type:'bush'},{x:400,y:372,type:'flower'},
+          {x:600,y:370,type:'grass'},{x:1000,y:372,type:'grass'},{x:1700,y:370,type:'flower'}
+        ];
+        w.collectibles = [
+          {x:500,y:390,type:'material',collected:false,label:'📋 Material didático sobre carbono'},
+          {x:1000,y:390,type:'material',collected:false,label:'🧪 Kit de experimento simples'},
+          {x:1600,y:390,type:'material',collected:false,label:'🎨 Cartaz sobre o Pantanal'}
+        ];
+        w.obstacles = [
+          {x:350,y:350,type:'sol',originX:350},
+          {x:700,y:424,type:'lama',originX:700},
+          {x:1100,y:418,type:'formigueiro',originX:1100},
+          {x:1400,y:418,type:'tronco',originX:1400}
+        ];
+        w.npcs = [
+          {x:100,y:384,type:'teacher',name:'Profa. Cláudia',avatar:'👩‍🏫',icon:'👩',w:26,h:34,
+           dialogue:[
+             {text:'Que bom que vieram! As crianças estão curiosas sobre o Pantanal. Podem apresentar de forma simples?',actions:[{label:'Com certeza!',next:1}]},
+             {text:'Colete os materiais espalhados pela fase: material didático, kit experimental e um cartaz. Com isso, podemos montar uma aula incrível!',actions:[{label:'Vou buscar!',close:true,reward:{community:10}}]}
+           ]},
+          {x:900,y:384,type:'child',name:'Lucas (Aluno)',avatar:'👦',icon:'👦',w:22,h:30,
+           dialogue:[
+             {text:'É verdade que o Pantanal pode ajudar a salvar o planeta?',actions:[{label:'Sim!',next:1}]},
+             {text:'O Pantanal armazena muito carbono no solo e na vegetação. Quando conservamos, ajudamos a manter esse carbono guardado e o clima mais estável.',actions:[{label:'Quero ser cientista!',next:2}]},
+             {text:'Você pode ser! A ciência precisa de pessoas curiosas e comprometidas com o ambiente. Cada pessoa faz diferença!',actions:[{label:'Obrigado!',close:true,reward:{community:15,science:5}}]}
+           ]}
+        ];
+      },
+      checkComplete: function() {
+        return G.world.collectibles.filter(c=>c.collected&&c.type==='material').length>=3;
+      },
+      onComplete: function() {
+        G.addScore('community',25);G.addScore('science',10);
+        G.unlockMedal('educator');
+      },
+      minigame: {
+        type:'quiz',
+        title:'Quiz: Ensinando na Escola',
+        questions:[
+          {q:'Qual a melhor forma de explicar carbono para crianças?',opts:['Usar fórmulas complexas','Comparar com coisas do dia a dia, como blocos de construção','Mostrar gráficos científicos','Não explicar, é muito difícil'],correct:1,feedback:'Crianças aprendem melhor quando o conteúdo se conecta com o que já conhecem. Metáforas, comparações e atividades práticas são as melhores ferramentas!'},
+          {q:'Por que levar a ciência para as escolas é importante?',opts:['Para os pesquisadores terem mais trabalho','Para inspirar novas gerações e criar consciência ambiental','Não é importante','Apenas para cumprir metas'],correct:1,feedback:'A extensão universitária na escola cria pontes entre o conhecimento científico e a formação cidadã, inspirando futuras gerações de guardiões do ambiente.'}
+        ]
+      }
+    },
+    {
+      id: 9, name: 'Feira de Extensão', icon: '🎪',
+      desc: 'Organize uma grande feira de extensão! Reúna tudo que aprendeu e compartilhe com a sociedade.',
+      objectives: 'Monte os estandes da feira e apresente os resultados para a comunidade.',
+      bgColor1: '#E1BEE7', bgColor2: '#CE93D8',
+      groundColor: '#6D4C41', groundTop: '#E8F5E9',
+      worldWidth: 2600,
+      summary: {
+        title: 'A Grande Feira',
+        text: 'Uma feira de extensão é o momento em que a universidade abre suas portas e mostra para a sociedade o que pesquisa, descobre e produz. É ciência acessível, é conhecimento compartilhado, é diálogo real. Quando a comunidade participa, opina e aprende, a ciência ganha sentido social e a conservação se torna responsabilidade de todos.'
+      },
+      build: function(w) {
+        w.platforms = [
+          {x:0,y:430,w:2600,h:170,color:'#6D4C41',top:'#E8F5E9'}
+        ];
+        w.decorations = [
+          {x:100,y:366,type:'tent'},{x:500,y:366,type:'tent'},{x:900,y:366,type:'tent'},
+          {x:1300,y:366,type:'tent'},{x:1700,y:366,type:'tent'},{x:2100,y:366,type:'tent'},
+          {x:300,y:372,type:'flower'},{x:700,y:370,type:'flower'},{x:1100,y:372,type:'flower'},
+          {x:1500,y:370,type:'flower'},{x:1900,y:372,type:'flower'},{x:2300,y:370,type:'flower'}
+        ];
+        w.collectibles = [
+          {x:200,y:390,type:'booth',collected:false,label:'🔬 Estande: Carbono no Solo'},
+          {x:600,y:390,type:'booth',collected:false,label:'💧 Estande: Áreas Alagadas'},
+          {x:1000,y:390,type:'booth',collected:false,label:'🔥 Estande: Fogo e Impactos'},
+          {x:1400,y:390,type:'booth',collected:false,label:'🌱 Estande: Restauração'},
+          {x:1800,y:390,type:'booth',collected:false,label:'🤝 Estande: Ciência e Comunidade'}
+        ];
+        w.obstacles = [
+          {x:350,y:350,type:'sol',originX:350},
+          {x:800,y:424,type:'lama',originX:800}
+        ];
+        w.npcs = [
+          {x:400,y:384,type:'elder',name:'Prefeita Dona Lúcia',avatar:'👩‍💼',icon:'👩',w:26,h:34,
+           dialogue:[
+             {text:'Que feira maravilhosa! A universidade trazendo conhecimento para nossa cidade. Isso fortalece Cáceres e o Pantanal.',actions:[{label:'Obrigado!',close:true,reward:{community:15}}]}
+           ]},
+          {x:1200,y:384,type:'child',name:'Grupo de Crianças',avatar:'👧',icon:'👧',w:22,h:30,
+           dialogue:[
+             {text:'A gente adorou aprender sobre o carbono! Vamos cuidar do Pantanal! Quando vocês voltam?',actions:[{label:'Logo, logo!',close:true,reward:{community:10}}]}
+           ]},
+          {x:2000,y:384,type:'farmer',name:'Associação de Produtores',avatar:'👨‍🌾',icon:'👨',w:28,h:36,
+           dialogue:[
+             {text:'Depois dessa feira, entendemos melhor como nossas práticas afetam o carbono no solo. Queremos parceria com a universidade!',actions:[{label:'Vamos juntos!',close:true,reward:{community:15,conservation:10}}]}
+           ]}
+        ];
+      },
+      checkComplete: function() {
+        return G.world.collectibles.filter(c=>c.collected&&c.type==='booth').length>=5;
+      },
+      onComplete: function() {
+        G.addScore('science',15);G.addScore('community',30);G.addScore('conservation',20);
+        G.unlockMedal('fair_master');
+      },
+      minigame: {
+        type:'quiz',
+        title:'Revisão Final da Feira',
+        questions:[
+          {q:'O que significa extensão universitária?',opts:['Ampliar o prédio da universidade','Levar o conhecimento da universidade para a sociedade e aprender com ela','Dar mais aulas','Construir novas salas'],correct:1,feedback:'Extensão é a ponte entre universidade e sociedade. É diálogo, aprendizado mútuo e transformação social através do conhecimento.'},
+          {q:'Qual o papel da comunidade na conservação do Pantanal?',opts:['Nenhum, é só trabalho dos cientistas','Fundamental: a conservação acontece com a participação de todos','Apenas obedecer leis','Só observar'],correct:1,feedback:'A conservação só funciona quando a comunidade participa, entende e se engaja. A ciência fornece dados, a comunidade fornece ação e sabedoria local.'}
+        ]
+      }
+    },
+    {
+      id: 10, name: 'Missão Final: Guardião do Carbono', icon: '🏆',
+      desc: 'Integre tudo: ciência, comunidade e conservação. Você é um verdadeiro Guardião do Carbono no Pantanal!',
+      objectives: 'Complete o percurso final integrando todos os conhecimentos e ações.',
+      bgColor1: '#FFD54F', bgColor2: '#FFC107',
+      groundColor: '#5D4037', groundTop: '#66BB6A',
+      worldWidth: 3000,
+      summary: {
+        title: 'Guardião do Carbono',
+        text: 'Você completou a jornada! Aprendeu que o carbono conecta solo, água, vegetação e atmosfera. Entendeu que a ciência precisa chegar às pessoas. Viu que o fogo, a degradação e as mudanças climáticas ameaçam o Pantanal, mas que a restauração, a educação e a participação social podem mudar esse cenário. Agora, você é um Guardião do Carbono. Leve esse conhecimento adiante. Compartilhe. Ensine. Cuide. O Pantanal e o planeta agradecem.'
+      },
+      build: function(w) {
+        w.platforms = [
+          {x:0,y:410,w:400,h:190,color:'#5D4037',top:'#66BB6A'},
+          {x:450,y:430,w:300,h:170,color:'#37474F',top:'#4FC3F7'},
+          {x:800,y:420,w:400,h:180,color:'#3E2723',top:'#757575'},
+          {x:1250,y:400,w:400,h:200,color:'#33691E',top:'#AED581'},
+          {x:1700,y:420,w:400,h:180,color:'#6D4C41',top:'#C8E6C9'},
+          {x:2150,y:410,w:400,h:190,color:'#5D4037',top:'#81C784'},
+          {x:2600,y:400,w:400,h:200,color:'#4E342E',top:'#66BB6A'}
+        ];
+        w.decorations = [
+          {x:100,y:348,type:'tree'},{x:250,y:350,type:'bush'},
+          {x:500,y:368,type:'reed'},{x:650,y:370,type:'reed'},
+          {x:900,y:358,type:'burnedtree'},{x:1050,y:360,type:'fire'},
+          {x:1350,y:338,type:'tree'},{x:1500,y:340,type:'sapling'},
+          {x:1800,y:358,type:'house'},{x:1950,y:356,type:'school'},
+          {x:2250,y:348,type:'tree'},{x:2400,y:350,type:'tree'},
+          {x:2700,y:338,type:'tree'},{x:2850,y:340,type:'tree'}
+        ];
+        w.collectibles = [
+          {x:200,y:370,type:'final',collected:false,label:'🔬 Ciência'},
+          {x:550,y:390,type:'final',collected:false,label:'💧 Água'},
+          {x:950,y:380,type:'final',collected:false,label:'🔥 Fogo'},
+          {x:1400,y:360,type:'final',collected:false,label:'🌱 Restauração'},
+          {x:1850,y:380,type:'final',collected:false,label:'🤝 Comunidade'},
+          {x:2300,y:370,type:'final',collected:false,label:'🌿 Conservação'},
+          {x:2750,y:360,type:'final',collected:false,label:'🏆 Guardião'}
+        ];
+        w.obstacles = [
+          {x:150,y:396,type:'jacare',originX:150},
+          {x:400,y:422,type:'buraco',originX:400},
+          {x:600,y:438,type:'lama',originX:600},
+          {x:850,y:360,type:'fumaca',originX:850},
+          {x:1050,y:350,type:'sol',originX:1050},
+          {x:1200,y:386,type:'onca',originX:1200},
+          {x:1500,y:408,type:'cobra',originX:1500},
+          {x:1650,y:408,type:'espinho',originX:1650},
+          {x:2000,y:398,type:'aranha',originX:2000},
+          {x:2450,y:398,type:'tronco',originX:2450},
+          {x:2700,y:386,type:'jacare',originX:2700}
+        ];
+        w.npcs = [
+          {x:1800,y:374,type:'all',name:'Comunidade do Pantanal',avatar:'👥',icon:'👥',w:28,h:36,
+           dialogue:[
+             {text:'Você fez um trabalho incrível! Aprendeu conosco e nos ensinou. Isso é a verdadeira extensão: ciência que transforma a vida das pessoas.',actions:[{label:'Obrigado a todos!',next:1}]},
+             {text:'O Pantanal precisa de guardiões como você. Pessoas que entendem a ciência e sabem levar o conhecimento para a sociedade.',actions:[{label:'Sou Guardião do Carbono!',close:true,reward:{science:20,community:20,conservation:20}}]}
+           ]}
+        ];
+      },
+      checkComplete: function() {
+        return G.world.collectibles.filter(c=>c.collected&&c.type==='final').length>=7;
+      },
+      onComplete: function() {
+        G.addScore('science',30);G.addScore('community',30);G.addScore('conservation',30);
+        G.unlockMedal('guardian');
+        G.unlockMedal('champion');
+      },
+      minigame: {
+        type:'quiz',
+        title:'Desafio Final: Guardião do Carbono',
+        questions:[
+          {q:'O que conecta o solo, a água, a vegetação e a atmosfera no Pantanal?',opts:['O turismo','O ciclo do carbono','A pecuária','A política'],correct:1,feedback:'O carbono circula entre todos os compartimentos ambientais: solo, água, vegetação e atmosfera. Entender esse ciclo é chave para a conservação.'},
+          {q:'Qual a principal mensagem deste jogo?',opts:['A ciência é só para cientistas','A universidade e a sociedade, juntas, podem conservar o Pantanal','O Pantanal não precisa de proteção','O carbono não é importante'],correct:1,feedback:'A ciência ganha sentido quando chega às pessoas. A conservação acontece quando universidade e sociedade trabalham juntas. Essa é a essência da extensão universitária.'},
+          {q:'O que significa ser um Guardião do Carbono?',opts:['Ter um diploma','Entender o carbono, compartilhar esse conhecimento e agir pela conservação','Apenas coletar amostras','Morar no Pantanal'],correct:1,feedback:'Um Guardião do Carbono entende a ciência, dialoga com a sociedade e age pela conservação. Qualquer pessoa pode ser um guardião!'}
+        ]
+      }
+    }
+  ],
+
+  // ============================================
+  // MEDALS DATA
+  // ============================================
+  allMedals: [
+    {id:'first_steps',name:'Primeiros Passos',icon:'👣',desc:'Completou a primeira fase'},
+    {id:'env_explorer',name:'Explorador',icon:'🔍',desc:'Conheceu todos os ambientes'},
+    {id:'sampler',name:'Amostrador',icon:'📍',desc:'Escolheu pontos de coleta'},
+    {id:'communicator',name:'Comunicador',icon:'💬',desc:'Dialogou com a comunidade'},
+    {id:'soil_expert',name:'Especialista em Solo',icon:'🟫',desc:'Entendeu o carbono no solo'},
+    {id:'methane_hunter',name:'Caçador de Metano',icon:'💨',desc:'Explorou áreas alagadas'},
+    {id:'fire_fighter',name:'Combatente do Fogo',icon:'🧯',desc:'Entendeu os impactos do fogo'},
+    {id:'restorer',name:'Restaurador',icon:'🌱',desc:'Restaurou áreas degradadas'},
+    {id:'educator',name:'Educador',icon:'📚',desc:'Levou ciência para a escola'},
+    {id:'fair_master',name:'Mestre da Feira',icon:'🎪',desc:'Organizou a feira de extensão'},
+    {id:'guardian',name:'Guardião do Carbono',icon:'🛡️',desc:'Completou a missão final'},
+    {id:'champion',name:'Campeão do Pantanal',icon:'🏆',desc:'Concluiu toda a jornada'}
+  ],
+
+  // ============================================
+  // INITIALIZATION
+  // ============================================
+  init: function() {
+    this.canvas = document.getElementById('game-canvas');
+    this.ctx = this.canvas.getContext('2d');
+    this.resize();
+    window.addEventListener('resize', () => this.resize());
+    this.loadSave();
+    this.setupControls();
+    this.buildMapGrid();
+    this.buildMedalsGrid();
+    this.updateHUD();
+    this.lastTime = performance.now();
+    this.gameLoop(this.lastTime);
+  },
+
+  resize: function() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    this.W = window.innerWidth;
+    this.H = window.innerHeight;
+    this.canvas.width = this.W * dpr;
+    this.canvas.height = this.H * dpr;
+    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  },
+
+  // ============================================
+  // SAVE / LOAD
+  // ============================================
+  save: function() {
+    const data = {
+      score: this.score,
+      completedPhases: this.completedPhases,
+      medals: this.medals,
+      currentPhase: this.currentPhase
+    };
+    try { localStorage.setItem('gc_save', JSON.stringify(data)); } catch(e) {}
+  },
+
+  loadSave: function() {
+    try {
+      const raw = localStorage.getItem('gc_save');
+      if (raw) {
+        const data = JSON.parse(raw);
+        if (data.score) this.score = data.score;
+        if (data.completedPhases) this.completedPhases = data.completedPhases;
+        if (data.medals) this.medals = data.medals;
+        if (data.currentPhase !== undefined) this.currentPhase = data.currentPhase;
+      }
+    } catch(e) {}
+  },
+
+  // ============================================
+  // SCREEN MANAGEMENT
+  // ============================================
+  showScreen: function(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const el = document.getElementById(id);
+    if (el) el.classList.add('active');
+    this.currentScreen = id;
+
+    const inGame = id === 'none';
+    document.getElementById('hud').style.display = inGame ? 'flex' : 'none';
+    document.getElementById('mobile-controls').style.display = inGame ? 'flex' : 'none';
+
+    if (id === 'map-screen') this.buildMapGrid();
+  },
+
+  // ============================================
+  // GAME START
+  // ============================================
+  startGame: function() {
+    this.showScreen('map-screen');
+  },
+
+  // ============================================
+  // MAP
+  // ============================================
+  buildMapGrid: function() {
+    const grid = document.getElementById('map-grid');
+    grid.innerHTML = '';
+    this.phases.forEach((phase, i) => {
+      const node = document.createElement('div');
+      node.className = 'map-node';
+      const isCompleted = this.completedPhases.includes(i);
+      const isUnlocked = i === 0 || this.completedPhases.includes(i - 1);
+      if (isCompleted) node.classList.add('completed');
+      else if (!isUnlocked) node.classList.add('locked');
+      if (i === this.currentPhase && isUnlocked && !isCompleted) node.classList.add('current');
+
+      node.innerHTML = `
+        <div class="node-icon">${phase.icon}</div>
+        <div class="node-name">${i + 1}. ${phase.name}</div>
+      `;
+
+      if (isUnlocked) {
+        node.addEventListener('click', () => this.selectPhase(i));
+      }
+      grid.appendChild(node);
+    });
+  },
+
+  selectPhase: function(i) {
+    this.currentPhase = i;
+    const phase = this.phases[i];
+    document.getElementById('pi-icon').textContent = phase.icon;
+    document.getElementById('pi-title').textContent = `Fase ${i + 1}: ${phase.name}`;
+    document.getElementById('pi-desc').textContent = phase.desc;
+    document.getElementById('pi-objectives').textContent = phase.objectives;
+    this.showScreen('phase-intro');
+  },
+
+  beginPhase: function() {
+    const phase = this.phases[this.currentPhase];
+    // Setup world
+    this.world.width = phase.worldWidth || 2400;
+    this.world.bgColor1 = phase.bgColor1;
+    this.world.bgColor2 = phase.bgColor2;
+    this.world.groundColor = phase.groundColor;
+    this.world.groundTop = phase.groundTop;
+    this.world.platforms = [];
+    this.world.objects = [];
+    this.world.npcs = [];
+    this.world.collectibles = [];
+    this.world.decorations = [];
+
+    phase.build(this.world);
+
+    // Reset player
+    this.player.x = 60;
+    this.player.y = 300;
+    this.player.vx = 0;
+    this.player.vy = 0;
+    this.player.onGround = false;
+    this.player.facing = 1;
+    this.player.interactTarget = null;
+    this.player.hp = this.player.maxHp;
+    this.player.invTimer = 0;
+
+    this.camera.x = 0;
+    this.camera.y = 0;
+    this.phaseState = { started: true, minigameDone: false, dialogueActive: false };
+
+    // Update HUD
+    document.getElementById('hud-phase-name').textContent = `${this.currentPhase + 1}. ${phase.name}`;
+    this.updateHUD();
+    this.updateHP();
+
+    // Hide screens, show game
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    this.currentScreen = 'none';
+    document.getElementById('hud').style.display = 'flex';
+    document.getElementById('mobile-controls').style.display = 'flex';
+    document.getElementById('dialogue-box').classList.remove('active');
+    document.getElementById('phase-summary').classList.remove('active');
+    document.getElementById('minigame-overlay').classList.remove('active');
+    this.isPaused = false;
+  },
+
+  // ============================================
+  // CONTROLS
+  // ============================================
+  setupControls: function() {
+    // Keyboard
+    document.addEventListener('keydown', e => {
+      this.keys[e.key] = true;
+      if (e.key === ' ' || e.key === 'e' || e.key === 'E') this.handleAction();
+      if (e.key === 'Escape') this.togglePause();
+    });
+    document.addEventListener('keyup', e => { this.keys[e.key] = false; });
+
+    // Touch - D-pad
+    const setupBtn = (id, prop) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const start = () => { this.touchControls[prop] = true; };
+      const end = () => { this.touchControls[prop] = false; };
+      el.addEventListener('touchstart', e => { e.preventDefault(); start(); }, {passive:false});
+      el.addEventListener('touchend', e => { e.preventDefault(); end(); }, {passive:false});
+      el.addEventListener('touchcancel', end);
+      el.addEventListener('mousedown', start);
+      el.addEventListener('mouseup', end);
+      el.addEventListener('mouseleave', end);
+    };
+    setupBtn('btn-left', 'left');
+    setupBtn('btn-right', 'right');
+    setupBtn('btn-jump', 'jump');
+    document.getElementById('btn-interact').addEventListener('touchstart', e => { e.preventDefault(); this.handleAction(); }, {passive:false});
+    document.getElementById('btn-interact').addEventListener('click', () => this.handleAction());
+  },
+
+  handleAction: function() {
+    if (this.currentScreen !== 'none') return;
+    if (this.phaseState && this.phaseState.dialogueActive) {
+      // Dialogue is handled by button clicks
+      return;
+    }
+    // Check for interactable
+    const p = this.player;
+    // NPCs
+    for (const npc of this.world.npcs) {
+      const dist = Math.abs((p.x + p.w/2) - (npc.x + (npc.w||28)/2));
+      if (dist < 50) {
+        this.startDialogue(npc);
+        return;
+      }
+    }
+    // Collectibles
+    for (const c of this.world.collectibles) {
+      if (c.collected) continue;
+      const dist = Math.abs((p.x + p.w/2) - c.x);
+      if (dist < 40) {
+        this.collectItem(c);
+        return;
+      }
+    }
+  },
+
+  // ============================================
+  // DIALOGUE SYSTEM
+  // ============================================
+  startDialogue: function(npc) {
+    if (this.phaseState.dialogueActive) return;
+    this.phaseState.dialogueActive = true;
+    npc._currentLine = 0;
+    this.showDialogueLine(npc, 0);
+  },
+
+  showDialogueLine: function(npc, lineIdx) {
+    const dlg = npc.dialogue[lineIdx];
+    if (!dlg) {
+      this.closeDialogue(npc);
+      return;
+    }
+    const box = document.getElementById('dialogue-box');
+    document.getElementById('dlg-avatar').textContent = npc.avatar || '👤';
+    document.getElementById('dlg-name').textContent = npc.name;
+    document.getElementById('dlg-text').textContent = dlg.text;
+
+    const actionsEl = document.getElementById('dlg-actions');
+    actionsEl.innerHTML = '';
+    (dlg.actions || []).forEach(action => {
+      const btn = document.createElement('button');
+      btn.className = 'dlg-btn';
+      btn.textContent = action.label;
+      btn.addEventListener('click', () => {
+        if (action.reward) {
+          for (const k in action.reward) this.addScore(k, action.reward[k]);
+        }
+        if (action.close) {
+          this.closeDialogue(npc);
+        } else if (action.next !== undefined) {
+          this.showDialogueLine(npc, action.next);
+        }
+      });
+      actionsEl.appendChild(btn);
+    });
+
+    box.classList.add('active');
+  },
+
+  closeDialogue: function(npc) {
+    document.getElementById('dialogue-box').classList.remove('active');
+    this.phaseState.dialogueActive = false;
+    npc._talked = true;
+    this.checkPhaseCompletion();
+  },
+
+  // ============================================
+  // COLLECTIBLES
+  // ============================================
+  collectItem: function(c) {
+    c.collected = true;
+    this.notify(`${c.label}`, 'success');
+    if (this.vibrateOn && navigator.vibrate) navigator.vibrate(50);
+
+    // Type-specific score
+    const scoreMap = {soil:['science',5],measure:['science',8],carbon:['science',10],
+      methane:['science',10],seedling:['conservation',10],firedata:['science',8],
+      material:['community',8],booth:['community',8],final:['science',5],
+      goodpoint:['science',8],badpoint:['science',3],leaf:['science',3],water:['conservation',8]};
+    const s = scoreMap[c.type];
+    if (s) this.addScore(s[0], s[1]);
+
+    // Bad point feedback
+    if (c.type === 'badpoint') {
+      this.notify('⚠️ Ponto inadequado! Mas você aprendeu a reconhecer.', 'warning');
+    }
+
+    this.checkPhaseCompletion();
+  },
+
+  // ============================================
+  // PHASE COMPLETION
+  // ============================================
+  checkPhaseCompletion: function() {
+    const phase = this.phases[this.currentPhase];
+    if (!phase.checkComplete()) return;
+
+    // Show minigame if not done
+    if (!this.phaseState.minigameDone && phase.minigame) {
+      setTimeout(() => this.showMinigame(phase.minigame), 600);
+      return;
+    }
+
+    // Phase complete!
+    this.completePhase();
+  },
+
+  completePhase: function() {
+    const phase = this.phases[this.currentPhase];
+    if (!this.completedPhases.includes(this.currentPhase)) {
+      this.completedPhases.push(this.currentPhase);
+      phase.onComplete();
+    }
+    this.save();
+    this.showPhaseSummary(phase);
+  },
+
+  showPhaseSummary: function(phase) {
+    const el = document.getElementById('summary-content');
+    const isLast = this.currentPhase === this.phases.length - 1;
+
+    el.innerHTML = `
+      <h2>✅ Fase Completa!</h2>
+      <div class="stars">⭐⭐⭐</div>
+      <div class="summary-scores">
+        <div class="summary-score"><div class="sc-icon">🔬</div><div class="sc-val">${this.score.science}</div><div class="sc-label">Ciência</div></div>
+        <div class="summary-score"><div class="sc-icon">🤝</div><div class="sc-val">${this.score.community}</div><div class="sc-label">Comunidade</div></div>
+        <div class="summary-score"><div class="sc-icon">🌿</div><div class="sc-val">${this.score.conservation}</div><div class="sc-label">Conservação</div></div>
+      </div>
+      <div class="learn-title">📚 ${phase.summary.title}</div>
+      <div class="learn-text"><p>${phase.summary.text}</p></div>
+      ${isLast ? `
+        <div style="margin-top:12px;padding:14px;background:linear-gradient(135deg,#FFF8E1,#FFECB3);border-radius:12px;text-align:center">
+          <div style="font-size:32px;margin-bottom:6px">🏆🌿🎓</div>
+          <div style="font-size:16px;font-weight:800;color:#E65100">Parabéns, Guardião do Carbono!</div>
+          <div style="font-size:12px;color:#795548;margin-top:6px;line-height:1.4">Você completou toda a jornada. Agora leve esse conhecimento adiante. Compartilhe, ensine e cuide do Pantanal. A ciência e a sociedade agradecem.</div>
+          <div style="font-size:10px;color:#999;margin-top:8px">UNEMAT · Cáceres · Mato Grosso</div>
+        </div>
+      ` : ''}
+      <button class="btn btn-primary" style="margin-top:16px;width:100%" onclick="G.afterSummary()">
+        ${isLast ? 'Voltar ao Mapa' : 'Próxima Fase →'}
+      </button>
+    `;
+    document.getElementById('phase-summary').classList.add('active');
+  },
+
+  afterSummary: function() {
+    document.getElementById('phase-summary').classList.remove('active');
+    const isLast = this.currentPhase >= this.phases.length - 1;
+    if (!isLast) {
+      this.currentPhase++;
+      this.save();
+      this.selectPhase(this.currentPhase);
+    } else {
+      this.showScreen('map-screen');
+    }
+  },
+
+  // ============================================
+  // MINIGAME SYSTEM
+  // ============================================
+  showMinigame: function(mg) {
+    const el = document.getElementById('minigame-content');
+    if (mg.type === 'quiz') this.buildQuizMinigame(el, mg);
+    else if (mg.type === 'match') this.buildMatchMinigame(el, mg);
+    else if (mg.type === 'sequence') this.buildSequenceMinigame(el, mg);
+    document.getElementById('minigame-overlay').classList.add('active');
+  },
+
+  closeMinigame: function() {
+    document.getElementById('minigame-overlay').classList.remove('active');
+    this.phaseState.minigameDone = true;
+    this.completePhase();
+  },
+
+  buildQuizMinigame: function(el, mg) {
+    let qIdx = 0;
+    let correctCount = 0;
+
+    const renderQ = () => {
+      if (qIdx >= mg.questions.length) {
+        el.innerHTML = `
+          <div class="mg-title">🎉 Quiz Completo!</div>
+          <div class="mg-desc">Você acertou ${correctCount} de ${mg.questions.length}!</div>
+          <div style="font-size:40px;text-align:center;margin:12px 0">${correctCount === mg.questions.length ? '⭐⭐⭐' : correctCount > 0 ? '⭐⭐' : '⭐'}</div>
+          <button class="btn btn-primary" style="width:100%" onclick="G.closeMinigame()">Continuar</button>
+        `;
+        this.addScore('science', correctCount * 5);
+        return;
+      }
+      const q = mg.questions[qIdx];
+      el.innerHTML = `
+        <div class="mg-title">${mg.title}</div>
+        <div class="mg-desc">Pergunta ${qIdx + 1} de ${mg.questions.length}</div>
+        <div class="quiz-question">${q.q}</div>
+        <div class="quiz-options" id="quiz-opts"></div>
+        <div class="quiz-feedback" id="quiz-fb"></div>
+      `;
+      const optsEl = document.getElementById('quiz-opts');
+      q.opts.forEach((opt, i) => {
+        const btn = document.createElement('div');
+        btn.className = 'quiz-opt';
+        btn.textContent = opt;
+        btn.addEventListener('click', () => {
+          // Disable all
+          optsEl.querySelectorAll('.quiz-opt').forEach((b, j) => {
+            b.style.pointerEvents = 'none';
+            if (j === q.correct) b.classList.add('correct');
+            else if (j === i && i !== q.correct) b.classList.add('wrong');
+          });
+          const fb = document.getElementById('quiz-fb');
+          if (i === q.correct) {
+            correctCount++;
+            fb.className = 'quiz-feedback show pos';
+            fb.textContent = '✅ ' + q.feedback;
+          } else {
+            fb.className = 'quiz-feedback show neg';
+            fb.textContent = '❌ ' + q.feedback;
+          }
+          setTimeout(() => { qIdx++; renderQ(); }, 2500);
+        });
+        optsEl.appendChild(btn);
+      });
+    };
+    renderQ();
+  },
+
+  buildMatchMinigame: function(el, mg) {
+    let matched = 0;
+    let selected = null;
+    const pairs = mg.pairs.map((p, i) => ({...p, id: i, leftMatched: false, rightMatched: false}));
+
+    const render = () => {
+      el.innerHTML = `
+        <div class="mg-title">${mg.title}</div>
+        <div class="mg-desc">${mg.desc}</div>
+        <div class="match-grid" id="match-grid"></div>
+        ${matched >= pairs.length ? `<button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="G.closeMinigame()">Continuar</button>` : ''}
+      `;
+      const grid = document.getElementById('match-grid');
+      // Left column
+      pairs.forEach((p, i) => {
+        const item = document.createElement('div');
+        item.className = 'match-item' + (p.leftMatched ? ' matched' : '') + (selected && selected.side === 'left' && selected.id === i ? ' selected' : '');
+        item.textContent = p.left;
+        if (!p.leftMatched) {
+          item.addEventListener('click', () => { handleSelect('left', i); });
+        }
+        grid.appendChild(item);
+
+        const item2 = document.createElement('div');
+        item2.className = 'match-item' + (p.rightMatched ? ' matched' : '') + (selected && selected.side === 'right' && selected.id === i ? ' selected' : '');
+        item2.textContent = p.right;
+        if (!p.rightMatched) {
+          item2.addEventListener('click', () => { handleSelect('right', i); });
+        }
+        grid.appendChild(item2);
+      });
+    };
+
+    const handleSelect = (side, id) => {
+      if (!selected) {
+        selected = {side, id};
+        render();
+      } else if (selected.side === side) {
+        selected = {side, id};
+        render();
+      } else {
+        // Check match
+        if (selected.id === id) {
+          pairs[id].leftMatched = true;
+          pairs[id].rightMatched = true;
+          matched++;
+          this.addScore('science', 5);
+          this.notify('✅ Correto!', 'success');
+        } else {
+          this.notify('❌ Tente novamente!', 'warning');
+        }
+        selected = null;
+        render();
+      }
+    };
+    render();
+  },
+
+  buildSequenceMinigame: function(el, mg) {
+    const shuffled = [...mg.items].map((item, i) => ({text: item, origIdx: i}));
+    // Shuffle
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    let placed = [];
+
+    const render = () => {
+      const allPlaced = placed.length === mg.items.length;
+      let isCorrect = false;
+      if (allPlaced) {
+        isCorrect = placed.every((p, i) => p.origIdx === mg.correctOrder[i]);
+      }
+
+      el.innerHTML = `
+        <div class="mg-title">${mg.title}</div>
+        <div class="mg-desc">${mg.desc}</div>
+        <div style="margin-bottom:8px;font-size:13px;font-weight:600;color:#555">Sequência montada:</div>
+        <div class="drag-zone" id="seq-target" style="min-height:${Math.max(60, placed.length * 40)}px">
+          ${placed.map((p, i) => `<div class="drag-item placed" style="width:100%;margin-bottom:4px">${i + 1}. ${p.text} <span style="cursor:pointer;margin-left:8px" data-remove="${i}">✕</span></div>`).join('')}
+        </div>
+        <div style="margin:8px 0;font-size:13px;font-weight:600;color:#555">Blocos disponíveis:</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px" id="seq-source">
+          ${shuffled.filter(s => !placed.find(p => p.origIdx === s.origIdx)).map((s, i) => `<div class="drag-item" data-idx="${s.origIdx}">${s.text}</div>`).join('')}
+        </div>
+        ${allPlaced ? (isCorrect ?
+          `<div style="text-align:center;margin-top:12px"><div style="font-size:28px">⭐⭐⭐</div><div style="font-size:14px;font-weight:700;color:#2E7D32">Sequência correta!</div><button class="btn btn-primary" style="margin-top:8px" onclick="G.closeMinigame()">Continuar</button></div>` :
+          `<div style="text-align:center;margin-top:12px"><div style="font-size:14px;color:#c62828">Ordem incorreta. Tente reorganizar!</div><button class="btn btn-small" style="margin-top:8px;background:#FF9800;color:#fff" onclick="G._seqReset()">Resetar</button></div>`
+        ) : ''}
+      `;
+
+      // Add click handlers
+      document.querySelectorAll('#seq-source .drag-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const idx = parseInt(item.dataset.idx);
+          const orig = shuffled.find(s => s.origIdx === idx);
+          placed.push(orig);
+          render();
+        });
+      });
+      document.querySelectorAll('[data-remove]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const ri = parseInt(btn.dataset.remove);
+          placed.splice(ri, 1);
+          render();
+        });
+      });
+
+      if (allPlaced && isCorrect) {
+        this.addScore('science', 15);
+      }
+    };
+
+    this._seqReset = () => { placed = []; render(); };
+    render();
+  },
+
+  // ============================================
+  // SCORING & MEDALS
+  // ============================================
+  addScore: function(type, amount) {
+    this.score[type] = (this.score[type] || 0) + amount;
+    this.updateHUD();
+    this.save();
+  },
+
+  updateHUD: function() {
+    document.getElementById('hud-science').textContent = this.score.science || 0;
+    document.getElementById('hud-community').textContent = this.score.community || 0;
+    document.getElementById('hud-conserv').textContent = this.score.conservation || 0;
+  },
+
+  unlockMedal: function(id) {
+    if (!this.medals.includes(id)) {
+      this.medals.push(id);
+      const medal = this.allMedals.find(m => m.id === id);
+      if (medal) this.notify(`🏅 Medalha: ${medal.name}!`, 'success');
+      this.save();
+    }
+  },
+
+  showMedals: function() {
+    this.previousScreen = this.currentScreen;
+    this.buildMedalsGrid();
+    this.showScreen('medals-screen');
+  },
+
+  returnFromMedals: function() {
+    this.showScreen(this.previousScreen === 'none' ? 'title-screen' : this.previousScreen);
+  },
+
+  buildMedalsGrid: function() {
+    const grid = document.getElementById('medals-grid');
+    grid.innerHTML = '';
+    this.allMedals.forEach(m => {
+      const unlocked = this.medals.includes(m.id);
+      grid.innerHTML += `
+        <div class="medal-item ${unlocked ? '' : 'locked'}">
+          <div class="m-icon">${m.icon}</div>
+          <div class="m-name">${m.name}</div>
+        </div>
+      `;
+    });
+  },
+
+  // ============================================
+  // NOTIFICATIONS
+  // ============================================
+  notify: function(text, type) {
+    const el = document.getElementById('notification');
+    el.textContent = text;
+    el.className = `notification show ${type || 'info'}`;
+    clearTimeout(this._notifyTimer);
+    this._notifyTimer = setTimeout(() => { el.classList.remove('show'); }, 2500);
+  },
+
+  // ============================================
+  // PAUSE / SETTINGS
+  // ============================================
+  togglePause: function() {
+    if (this.currentScreen !== 'none' && this.currentScreen !== 'pause-menu') return;
+    this.isPaused = !this.isPaused;
+    if (this.isPaused) {
+      this.showScreen('pause-menu');
+    } else {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      this.currentScreen = 'none';
+      document.getElementById('hud').style.display = 'flex';
+      document.getElementById('mobile-controls').style.display = 'flex';
+    }
+  },
+
+  showSettings: function() {
+    this.previousScreen = this.currentScreen;
+    this.showScreen('settings-screen');
+    document.getElementById('toggle-sound').className = 'toggle' + (this.soundOn ? ' on' : '');
+    document.getElementById('toggle-vibrate').className = 'toggle' + (this.vibrateOn ? ' on' : '');
+  },
+
+  hideSettings: function() {
+    this.showScreen(this.previousScreen === 'none' ? 'title-screen' : this.previousScreen);
+  },
+
+  toggleSound: function() {
+    this.soundOn = !this.soundOn;
+    document.getElementById('toggle-sound').className = 'toggle' + (this.soundOn ? ' on' : '');
+  },
+
+  toggleVibrate: function() {
+    this.vibrateOn = !this.vibrateOn;
+    document.getElementById('toggle-vibrate').className = 'toggle' + (this.vibrateOn ? ' on' : '');
+  },
+
+
+  takeDamage: function(amount, label) {
+    const p = this.player;
+    if (p.invTimer > 0) return;
+    p.hp = Math.max(0, p.hp - amount);
+    p.invTimer = 1.2;
+    p.vy = -200;
+    this.updateHP();
+    if (label) this.notify(label, 'danger');
+    if (this.vibrateOn && navigator.vibrate) navigator.vibrate([100,50,100]);
+    const flash = document.getElementById('damage-flash');
+    if (flash) { flash.classList.add('active'); setTimeout(() => flash.classList.remove('active'), 200); }
+    if (p.hp <= 0) { p.hp = p.maxHp; p.x = 60; p.y = 200; p.vy = 0; this.updateHP(); this.notify('💔 Recomeçando...', 'danger'); }
+  },
+
+  updateHP: function() {
+    const pct = (this.player.hp / this.player.maxHp) * 100;
+    const fill = document.getElementById('hud-hp-fill');
+    if (fill) {
+      fill.style.width = pct + '%';
+      fill.style.background = pct > 50 ? 'linear-gradient(90deg,#4CAF50,#8BC34A)' : pct > 25 ? 'linear-gradient(90deg,#FF9800,#FFC107)' : 'linear-gradient(90deg,#D32F2F,#FF5722)';
+    }
+  },
+
+  boxOverlap: function(ax,ay,aw,ah,bx,by,bw,bh) { return ax<bx+bw && ax+aw>bx && ay<by+bh && ay+ah>by; },
+
+  // ============================================
+  // GAME LOOP
+  // ============================================
+  gameLoop: function(time) {
+    const dt = Math.min((time - this.lastTime) / 1000, 0.05);
+    this.lastTime = time;
+
+    if (this.currentScreen === 'none' && !this.isPaused) {
+      this.update(dt);
+    }
+    this.render();
+
+    requestAnimationFrame(t => this.gameLoop(t));
+  },
+
+  // ============================================
+  // UPDATE
+  // ============================================
+  update: function(dt) {
+    if (this.phaseState && this.phaseState.dialogueActive) return;
+
+    const p = this.player;
+    const w = this.world;
+
+    // Input
+    let moveX = 0;
+    if (this.keys['ArrowLeft'] || this.keys['a'] || this.keys['A'] || this.touchControls.left) moveX = -1;
+    if (this.keys['ArrowRight'] || this.keys['d'] || this.keys['D'] || this.touchControls.right) moveX = 1;
+    const wantJump = this.keys['ArrowUp'] || this.keys['w'] || this.keys['W'] || this.keys[' '] || this.touchControls.jump;
+
+    // Movement
+    p.vx = moveX * p.speed;
+    if (moveX !== 0) p.facing = moveX;
+
+    // Gravity
+    p.vy += w.gravity * dt;
+
+    // Jump
+    if (wantJump && p.onGround) {
+      p.vy = p.jumpForce;
+      p.onGround = false;
+    }
+
+    // Apply velocity
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+
+    // Clamp to world
+    if (p.x < 0) p.x = 0;
+    if (p.x > w.width - p.w) p.x = w.width - p.w;
+
+    // Platform collision
+    p.onGround = false;
+    for (const plat of w.platforms) {
+      if (p.x + p.w > plat.x && p.x < plat.x + plat.w) {
+        if (p.vy >= 0 && p.y + p.h >= plat.y && p.y + p.h <= plat.y + 20) {
+          p.y = plat.y - p.h;
+          p.vy = 0;
+          p.onGround = true;
+        }
+      }
+    }
+
+    // Fall through bottom
+    if (p.y > this.H + 100) {
+      p.x = 60; p.y = 200; p.vy = 0;
+    }
+
+    // Invincibility timer
+    if (p.invTimer > 0) p.invTimer -= dt;
+
+    // Obstacle collision & effects
+    let speedMult = 1;
+    for (const ob of w.obstacles) {
+      const ot = this.obstacleTypes[ob.type]; if (!ot) continue;
+      // Moving obstacles
+      if (ot.moving) ob.x = ob.originX + Math.sin(performance.now()/1000*(ot.speed/30)) * ot.range;
+      // Slow/heat
+      if ((ot.slow || ot.heat) && this.boxOverlap(p.x,p.y,p.w,p.h,ob.x,ob.y,ot.w,ot.h)) speedMult = ot.slow ? 0.4 : 0.6;
+      // Solid (tronco) - stand on top
+      if (ot.solid && p.x+p.w>ob.x && p.x<ob.x+ot.w && p.vy>=0 && p.y+p.h>=ob.y && p.y+p.h<=ob.y+10) {
+        p.y = ob.y - p.h; p.vy = 0; p.onGround = true;
+      }
+      // Ground hazards
+      if (ot.isGround && this.boxOverlap(p.x,p.y+p.h-8,p.w,8,ob.x,ob.y,ot.w,ot.h)) this.takeDamage(ot.damage, ot.label);
+      // Damage creatures
+      if (ot.damage > 0 && !ot.isGround && !ot.solid && this.boxOverlap(p.x+4,p.y+4,p.w-8,p.h-8,ob.x,ob.y,ot.w,ot.h)) this.takeDamage(ot.damage, ot.label);
+    }
+    p.vx *= speedMult;
+
+    // Animation
+    if (moveX !== 0) {
+      p.frameTime += dt;
+      if (p.frameTime > 0.15) { p.frame = (p.frame + 1) % 4; p.frameTime = 0; }
+    } else {
+      p.frame = 0; p.frameTime = 0;
+    }
+
+    // Camera
+    const targetCX = p.x + p.w / 2 - this.W / 2;
+    const targetCY = p.y + p.h / 2 - this.H / 2 + 60;
+    this.camera.x += (targetCX - this.camera.x) * 4 * dt;
+    this.camera.y += (targetCY - this.camera.y) * 4 * dt;
+    this.camera.x = Math.max(0, Math.min(w.width - this.W, this.camera.x));
+    this.camera.y = Math.max(-100, Math.min(200, this.camera.y));
+
+    // Auto-collect proximity
+    for (const c of w.collectibles) {
+      if (c.collected) continue;
+      const dist = Math.hypot((p.x + p.w/2) - c.x, (p.y + p.h/2) - c.y);
+      if (dist < 30) {
+        this.collectItem(c);
+      }
+    }
+  },
+
+  // ============================================
+  // RENDER
+  // ============================================
+  render: function() {
+    const ctx = this.ctx;
+    const W = this.W;
+    const H = this.H;
+
+    if (this.currentScreen !== 'none') {
+      // Draw background behind screens
+      ctx.fillStyle = '#1a3a2a';
+      ctx.fillRect(0, 0, W, H);
+      return;
+    }
+
+    const cam = this.camera;
+    const w = this.world;
+    const p = this.player;
+
+    // --- SKY ---
+    const skyGrad = ctx.createLinearGradient(0, 0, 0, H);
+    skyGrad.addColorStop(0, w.bgColor1);
+    skyGrad.addColorStop(1, w.bgColor2);
+    ctx.fillStyle = skyGrad;
+    ctx.fillRect(0, 0, W, H);
+
+    // --- CLOUDS (parallax) ---
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    const time = performance.now() / 1000;
+    for (let i = 0; i < 5; i++) {
+      const cx = ((i * 400 + time * 15) % (W + 200)) - 100;
+      const cy = 40 + i * 35 + Math.sin(time + i) * 8;
+      this.drawCloud(ctx, cx, cy, 30 + i * 10);
+    }
+
+    // --- MOUNTAINS (parallax) ---
+    ctx.fillStyle = 'rgba(0,0,0,0.06)';
+    ctx.beginPath();
+    ctx.moveTo(0, H);
+    for (let x = 0; x < W + 60; x += 60) {
+      const mx = x + cam.x * 0.1;
+      ctx.lineTo(x, H * 0.5 + Math.sin(mx * 0.005) * 60 + Math.cos(mx * 0.008) * 40);
+    }
+    ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
+
+    ctx.fillStyle = 'rgba(0,0,0,0.04)';
+    ctx.beginPath();
+    ctx.moveTo(0, H);
+    for (let x = 0; x < W + 60; x += 60) {
+      const mx = x + cam.x * 0.2;
+      ctx.lineTo(x, H * 0.55 + Math.sin(mx * 0.007) * 50 + Math.cos(mx * 0.01) * 30);
+    }
+    ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
+
+    // --- WORLD OBJECTS (translated) ---
+    ctx.save();
+    ctx.translate(-cam.x, -cam.y);
+
+    // Platforms
+    for (const plat of w.platforms) {
+      // Platform body (LEGO-style)
+      ctx.fillStyle = plat.color || w.groundColor;
+      this.drawBlock(ctx, plat.x, plat.y + 6, plat.w, plat.h - 6, 4);
+
+      // Platform top
+      ctx.fillStyle = plat.top || w.groundTop;
+      this.drawBlock(ctx, plat.x, plat.y, plat.w, 8, 4);
+
+      // LEGO studs on top
+      ctx.fillStyle = 'rgba(255,255,255,0.15)';
+      for (let sx = plat.x + 15; sx < plat.x + plat.w - 10; sx += 32) {
+        ctx.beginPath();
+        ctx.arc(sx, plat.y + 2, 5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Environment label
+      if (plat.envLabel) {
+        ctx.fillStyle = 'rgba(255,255,255,0.85)';
+        ctx.font = '600 11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`${plat.envIcon || ''} ${plat.envLabel}`, plat.x + plat.w / 2, plat.y - 8);
+        ctx.textAlign = 'left';
+      }
+    }
+
+    // Decorations
+    for (const d of w.decorations) {
+      this.drawDecoration(ctx, d, time);
+    }
+
+    // Obstacles
+    for (const ob of w.obstacles) { this.drawObstacle(ctx, ob, time); }
+
+    // Collectibles
+    for (const c of w.collectibles) {
+      if (c.collected) continue;
+      this.drawCollectible(ctx, c, time);
+    }
+
+    // NPCs
+    for (const npc of w.npcs) {
+      this.drawNPC(ctx, npc, time);
+    }
+
+    // Player
+    this.drawPlayer(ctx, p, time);
+
+    ctx.restore();
+  },
+
+  // ============================================
+  // DRAWING HELPERS
+  // ============================================
+  drawBlock: function(ctx, x, y, w, h, r) {
+    r = r || 4;
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+    ctx.fill();
+  },
+
+  drawCloud: function(ctx, x, y, size) {
+    ctx.beginPath();
+    ctx.arc(x, y, size * 0.5, 0, Math.PI * 2);
+    ctx.arc(x + size * 0.4, y - size * 0.2, size * 0.4, 0, Math.PI * 2);
+    ctx.arc(x + size * 0.8, y, size * 0.45, 0, Math.PI * 2);
+    ctx.arc(x + size * 0.4, y + size * 0.15, size * 0.35, 0, Math.PI * 2);
+    ctx.fill();
+  },
+
+  drawDecoration: function(ctx, d, time) {
+    const x = d.x, y = d.y;
+    switch (d.type) {
+      case 'tree':
+        // LEGO tree
+        ctx.fillStyle = '#5D4037';
+        this.drawBlock(ctx, x + 8, y, 8, 62, 2);
+        ctx.fillStyle = '#388E3C';
+        this.drawBlock(ctx, x - 8, y - 30, 40, 35, 6);
+        ctx.fillStyle = '#43A047';
+        this.drawBlock(ctx, x - 4, y - 42, 32, 20, 6);
+        ctx.fillStyle = '#66BB6A';
+        this.drawBlock(ctx, x, y - 50, 24, 14, 6);
+        // Studs
+        ctx.fillStyle = 'rgba(255,255,255,0.12)';
+        ctx.beginPath(); ctx.arc(x + 6, y - 25, 3, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(x + 18, y - 35, 3, 0, Math.PI * 2); ctx.fill();
+        break;
+      case 'bush':
+        ctx.fillStyle = '#43A047';
+        this.drawBlock(ctx, x - 5, y, 24, 16, 8);
+        ctx.fillStyle = '#66BB6A';
+        this.drawBlock(ctx, x - 2, y - 6, 18, 10, 6);
+        break;
+      case 'flower':
+        ctx.fillStyle = '#388E3C';
+        ctx.fillRect(x + 4, y + 4, 3, 14);
+        ctx.fillStyle = ['#FF5722','#FF9800','#E91E63','#9C27B0'][Math.floor(x) % 4];
+        ctx.beginPath(); ctx.arc(x + 5, y + 2, 5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#FFEB3B';
+        ctx.beginPath(); ctx.arc(x + 5, y + 2, 2, 0, Math.PI * 2); ctx.fill();
+        break;
+      case 'grass':
+        ctx.fillStyle = '#81C784';
+        for (let i = 0; i < 5; i++) {
+          const gx = x + i * 6;
+          const sway = Math.sin(time * 2 + i) * 2;
+          ctx.fillRect(gx + sway, y + 4, 2, 12 + i % 3 * 3);
+        }
+        break;
+      case 'rock':
+        ctx.fillStyle = '#9E9E9E';
+        this.drawBlock(ctx, x, y + 6, 22, 14, 4);
+        ctx.fillStyle = '#BDBDBD';
+        this.drawBlock(ctx, x + 3, y + 3, 16, 8, 4);
+        break;
+      case 'deadtree':
+        ctx.fillStyle = '#795548';
+        ctx.fillRect(x + 6, y - 10, 6, 48);
+        ctx.fillRect(x - 2, y, 8, 4);
+        ctx.fillRect(x + 14, y - 6, 10, 3);
+        break;
+      case 'burnedtree':
+        ctx.fillStyle = '#424242';
+        ctx.fillRect(x + 7, y - 5, 5, 42);
+        ctx.fillRect(x, y + 2, 7, 3);
+        ctx.fillRect(x + 12, y - 2, 8, 3);
+        ctx.fillStyle = '#333';
+        this.drawBlock(ctx, x - 2, y - 12, 22, 10, 4);
+        break;
+      case 'reed':
+        ctx.fillStyle = '#66BB6A';
+        const sway = Math.sin(time * 1.5 + x * 0.1) * 3;
+        ctx.fillRect(x + 4 + sway, y - 8, 2, 38);
+        ctx.fillStyle = '#8BC34A';
+        ctx.fillRect(x + 10 + sway * 0.8, y - 4, 2, 34);
+        ctx.fillStyle = '#A5D6A7';
+        ctx.beginPath();
+        ctx.ellipse(x + 5 + sway, y - 10, 4, 6, 0, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+      case 'sapling':
+        ctx.fillStyle = '#795548';
+        ctx.fillRect(x + 8, y + 6, 4, 20);
+        ctx.fillStyle = '#81C784';
+        this.drawBlock(ctx, x + 2, y - 4, 16, 14, 6);
+        break;
+      case 'house':
+        // LEGO house
+        ctx.fillStyle = '#FFF9C4';
+        this.drawBlock(ctx, x, y - 8, 40, 44, 4);
+        ctx.fillStyle = '#F44336';
+        ctx.beginPath();
+        ctx.moveTo(x - 4, y - 8);
+        ctx.lineTo(x + 20, y - 28);
+        ctx.lineTo(x + 44, y - 8);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = '#5D4037';
+        this.drawBlock(ctx, x + 14, y + 10, 12, 26, 2);
+        ctx.fillStyle = '#81D4FA';
+        this.drawBlock(ctx, x + 4, y, 8, 8, 1);
+        this.drawBlock(ctx, x + 28, y, 8, 8, 1);
+        break;
+      case 'school':
+        ctx.fillStyle = '#E3F2FD';
+        this.drawBlock(ctx, x - 5, y - 14, 50, 50, 4);
+        ctx.fillStyle = '#1565C0';
+        ctx.beginPath();
+        ctx.moveTo(x - 8, y - 14);
+        ctx.lineTo(x + 20, y - 34);
+        ctx.lineTo(x + 48, y - 14);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = '#5D4037';
+        this.drawBlock(ctx, x + 16, y + 12, 10, 24, 2);
+        ctx.fillStyle = '#FFEB3B';
+        ctx.font = '8px sans-serif';
+        ctx.fillText('ESCOLA', x + 4, y - 2);
+        break;
+      case 'tent':
+        ctx.fillStyle = ['#FF9800','#4CAF50','#2196F3','#9C27B0','#F44336','#009688'][Math.floor(x / 100) % 6];
+        ctx.beginPath();
+        ctx.moveTo(x - 5, y + 36);
+        ctx.lineTo(x + 20, y - 10);
+        ctx.lineTo(x + 45, y + 36);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+        ctx.beginPath();
+        ctx.moveTo(x + 10, y + 36);
+        ctx.lineTo(x + 20, y + 10);
+        ctx.lineTo(x + 30, y + 36);
+        ctx.closePath();
+        ctx.fill();
+        break;
+      case 'fire':
+        const flicker = Math.sin(time * 8 + x) * 3;
+        ctx.fillStyle = '#FF5722';
+        ctx.beginPath();
+        ctx.moveTo(x + 4, y + 16);
+        ctx.quadraticCurveTo(x + 8 + flicker, y - 6, x + 12, y + 16);
+        ctx.fill();
+        ctx.fillStyle = '#FFEB3B';
+        ctx.beginPath();
+        ctx.moveTo(x + 6, y + 16);
+        ctx.quadraticCurveTo(x + 8 - flicker * 0.5, y + 2, x + 10, y + 16);
+        ctx.fill();
+        break;
+      case 'smoke':
+        ctx.fillStyle = 'rgba(100,100,100,0.2)';
+        for (let si = 0; si < 3; si++) {
+          const sy = y - 20 - si * 15 - (time * 10 % 30);
+          const sx = x + 6 + Math.sin(time * 2 + si) * 5;
+          ctx.beginPath(); ctx.arc(sx, sy, 6 + si * 2, 0, Math.PI * 2); ctx.fill();
+        }
+        break;
+    }
+  },
+
+
+  drawObstacle: function(ctx, ob, time) {
+    const ot = this.obstacleTypes[ob.type]; if (!ot) return;
+    const x = ob.x, y = ob.y;
+    switch(ob.type) {
+      case 'jacare':
+        ctx.fillStyle='#2E7D32';this.drawBlock(ctx,x,y+2,36,12,4);
+        ctx.fillStyle='#388E3C';this.drawBlock(ctx,x+30,y,14,10,3);
+        ctx.fillStyle='#1B5E20';this.drawBlock(ctx,x+32,y+8,12,4,2);
+        ctx.fillStyle='#FFEB3B';ctx.beginPath();ctx.arc(x+36,y+4,2.5,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='#000';ctx.beginPath();ctx.arc(x+36,y+4,1,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='#fff';for(let i=0;i<3;i++)ctx.fillRect(x+34+i*3,y+7,2,2);
+        ctx.fillStyle='rgba(0,0,0,0.1)';for(let i=0;i<4;i++){ctx.beginPath();ctx.arc(x+6+i*8,y+6,3,0,Math.PI*2);ctx.fill()}
+        ctx.fillStyle='rgba(255,0,0,'+(0.12+Math.sin(time*4)*0.08)+')';ctx.beginPath();ctx.arc(x+20,y+8,22,0,Math.PI*2);ctx.fill();
+        break;
+      case 'onca':
+        ctx.fillStyle='#FF8F00';this.drawBlock(ctx,x+4,y+10,28,16,5);
+        ctx.fillStyle='#FFA000';this.drawBlock(ctx,x+26,y+2,14,14,5);
+        ctx.fillStyle='#E65100';this.drawBlock(ctx,x+6,y+24,6,6,2);this.drawBlock(ctx,x+24,y+24,6,6,2);
+        ctx.fillStyle='#000';ctx.beginPath();ctx.arc(x+32,y+7,2,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='#5D4037';for(let i=0;i<5;i++){ctx.beginPath();ctx.arc(x+8+i*5,y+14+Math.cos(i)*3,2,0,Math.PI*2);ctx.fill()}
+        ctx.fillStyle='#E65100';ctx.beginPath();ctx.moveTo(x+28,y+2);ctx.lineTo(x+26,y-4);ctx.lineTo(x+32,y+2);ctx.fill();
+        ctx.beginPath();ctx.moveTo(x+34,y+2);ctx.lineTo(x+36,y-4);ctx.lineTo(x+38,y+2);ctx.fill();
+        ctx.fillStyle='rgba(255,0,0,'+(0.1+Math.sin(time*5)*0.08)+')';ctx.beginPath();ctx.arc(x+18,y+14,26,0,Math.PI*2);ctx.fill();
+        break;
+      case 'cobra':
+        var sw2=Math.sin(time*3+x*0.1)*4;
+        ctx.strokeStyle='#4E342E';ctx.lineWidth=5;ctx.lineCap='round';
+        ctx.beginPath();ctx.moveTo(x,y+5);ctx.quadraticCurveTo(x+8,y-2+sw2,x+16,y+5);ctx.quadraticCurveTo(x+22,y+12-sw2,x+28,y+5);ctx.stroke();
+        ctx.fillStyle='#D32F2F';ctx.beginPath();ctx.moveTo(x+28,y+4);ctx.lineTo(x+34,y+2);ctx.lineTo(x+34,y+8);ctx.closePath();ctx.fill();
+        ctx.fillStyle='#FFEB3B';ctx.beginPath();ctx.arc(x+26,y+3,2,0,Math.PI*2);ctx.fill();
+        break;
+      case 'aranha':
+        ctx.fillStyle='#4E342E';ctx.beginPath();ctx.arc(x+10,y+10,7,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='#3E2723';ctx.beginPath();ctx.arc(x+10,y+4,4,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle='#5D4037';ctx.lineWidth=1.5;
+        for(let i=0;i<4;i++){var a=(i-1.5)*0.4;ctx.beginPath();ctx.moveTo(x+10,y+10);ctx.lineTo(x+10+Math.cos(a)*14,y+10+Math.sin(a)*8+Math.sin(time*4+i)*2);ctx.stroke();ctx.beginPath();ctx.moveTo(x+10,y+10);ctx.lineTo(x+10-Math.cos(a)*14,y+10+Math.sin(a)*8+Math.sin(time*4+i+2)*2);ctx.stroke()}
+        ctx.fillStyle='#F44336';ctx.beginPath();ctx.arc(x+8,y+3,1.5,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(x+12,y+3,1.5,0,Math.PI*2);ctx.fill();
+        break;
+      case 'buraco':
+        ctx.fillStyle='#1a1a1a';this.drawBlock(ctx,x,y,ot.w,ot.h+10,4);
+        ctx.fillStyle='#333';this.drawBlock(ctx,x+3,y+2,ot.w-6,ot.h+4,3);
+        ctx.fillStyle='#FF8F00';ctx.fillRect(x-2,y-2,4,4);ctx.fillRect(x+ot.w-2,y-2,4,4);
+        break;
+      case 'ponte':
+        ctx.fillStyle='#795548';this.drawBlock(ctx,x,y,20,ot.h,3);this.drawBlock(ctx,x+40,y,20,ot.h,3);
+        ctx.fillStyle='#1a1a1a';ctx.fillRect(x+20,y+2,20,ot.h+8);
+        ctx.fillStyle='#5D4037';ctx.fillRect(x,y-4,20,3);ctx.fillRect(x+40,y-4,20,3);
+        ctx.save();ctx.translate(x+25,y+4);ctx.rotate(Math.sin(time*2)*0.3);ctx.fillStyle='#8D6E63';ctx.fillRect(-3,0,6,10);ctx.restore();
+        break;
+      case 'tronco':
+        ctx.fillStyle='#6D4C41';this.drawBlock(ctx,x,y,ot.w,ot.h,6);
+        ctx.fillStyle='#8D6E63';this.drawBlock(ctx,x+4,y+2,ot.w-8,ot.h-4,4);
+        ctx.strokeStyle='rgba(0,0,0,0.15)';ctx.lineWidth=1;
+        for(let i=0;i<4;i++){ctx.beginPath();ctx.moveTo(x+8+i*10,y+3);ctx.lineTo(x+8+i*10,y+ot.h-3);ctx.stroke()}
+        ctx.fillStyle='#81C784';ctx.beginPath();ctx.arc(x+10,y+2,4,Math.PI,0);ctx.fill();
+        break;
+      case 'lama':
+        ctx.fillStyle='#6D4C41';this.drawBlock(ctx,x,y,ot.w,ot.h+4,3);
+        ctx.fillStyle='rgba(139,119,101,0.5)';
+        ctx.beginPath();ctx.arc(x+12,y-1+Math.sin(time*2)*2,3,0,Math.PI*2);ctx.fill();
+        ctx.beginPath();ctx.arc(x+30,y-2+Math.sin(time*2.5)*2,2,0,Math.PI*2);ctx.fill();
+        ctx.beginPath();ctx.arc(x+42,y+Math.sin(time*3)*2,2.5,0,Math.PI*2);ctx.fill();
+        break;
+      case 'sol':
+        var ha=0.08+Math.sin(time*2)*0.04;
+        ctx.fillStyle='rgba(255,152,0,'+ha+')';ctx.fillRect(x,y,ot.w,ot.h);
+        ctx.strokeStyle='rgba(255,152,0,'+(0.3+Math.sin(time*3)*0.15)+')';ctx.lineWidth=2;
+        for(let i=0;i<3;i++){var wy=y+15+i*20;ctx.beginPath();for(let wx=x;wx<x+ot.w;wx+=8)ctx.lineTo(wx,wy+Math.sin(time*4+wx*0.05+i)*5);ctx.stroke()}
+        ctx.fillStyle='rgba(255,193,7,'+(0.6+Math.sin(time*2)*0.2)+')';ctx.beginPath();ctx.arc(x+ot.w/2,y-10,16,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='rgba(255,235,59,0.8)';ctx.beginPath();ctx.arc(x+ot.w/2,y-10,10,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle='rgba(255,193,7,0.4)';ctx.lineWidth=2;
+        for(let i=0;i<8;i++){var ra=i*Math.PI/4+time;ctx.beginPath();ctx.moveTo(x+ot.w/2+Math.cos(ra)*18,y-10+Math.sin(ra)*18);ctx.lineTo(x+ot.w/2+Math.cos(ra)*24,y-10+Math.sin(ra)*24);ctx.stroke()}
+        break;
+      case 'fumaca':
+        for(let i=0;i<8;i++){var sx=x+10+i*10+Math.sin(time*1.5+i)*8,sy=y+10+Math.cos(time+i*0.7)*12,sr=8+i*2+Math.sin(time*2+i)*3;
+        ctx.fillStyle='rgba(100,100,100,'+(0.12+Math.sin(time+i)*0.05)+')';ctx.beginPath();ctx.arc(sx,sy,sr,0,Math.PI*2);ctx.fill()}
+        break;
+      case 'formigueiro':
+        ctx.fillStyle='#795548';ctx.beginPath();ctx.moveTo(x,y+ot.h);ctx.lineTo(x+ot.w/2,y);ctx.lineTo(x+ot.w,y+ot.h);ctx.closePath();ctx.fill();
+        ctx.fillStyle='#5D4037';ctx.beginPath();ctx.arc(x+ot.w/2,y+ot.h-3,3,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='#1a1a1a';for(let i=0;i<4;i++){ctx.fillRect(x+4+i*5+Math.sin(time*3+i)*3,y+ot.h-6+Math.cos(time*4+i)*3,2,2)}
+        break;
+      case 'espinho':
+        ctx.fillStyle='#33691E';for(let i=0;i<5;i++){var ex=x+i*7;ctx.beginPath();ctx.moveTo(ex,y+ot.h);ctx.lineTo(ex+3,y);ctx.lineTo(ex+6,y+ot.h);ctx.closePath();ctx.fill()}
+        ctx.fillStyle='#1B5E20';this.drawBlock(ctx,x,y+ot.h-3,ot.w,3,2);
+        break;
+    }
+  },
+
+  drawCollectible: function(ctx, c, time) {
+    const bob = Math.sin(time * 3 + c.x) * 4;
+    const y = c.y + bob;
+    const glow = 0.3 + Math.sin(time * 4 + c.x) * 0.15;
+
+    // Glow
+    ctx.fillStyle = `rgba(255,215,0,${glow})`;
+    ctx.beginPath(); ctx.arc(c.x, y, 16, 0, Math.PI * 2); ctx.fill();
+
+    // Icon based on type
+    const icons = {soil:'🟫',measure:'📊',carbon:'⚫',methane:'💨',seedling:'🌱',
+      firedata:'📋',material:'📦',booth:'🏗️',final:'⭐',goodpoint:'✅',badpoint:'⚠️',leaf:'🍃',water:'💧'};
+    ctx.font = '20px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(icons[c.type] || '💎', c.x, y + 6);
+    ctx.textAlign = 'left';
+  },
+
+  drawNPC: function(ctx, npc, time) {
+    const x = npc.x, y = npc.y;
+    const bob = Math.sin(time * 2 + x * 0.1) * 2;
+
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.1)';
+    ctx.beginPath(); ctx.ellipse(x + 14, y + 36, 12, 4, 0, 0, Math.PI * 2); ctx.fill();
+
+    // Body (LEGO-style)
+    const colors = {guide:'#1565C0',student:'#7B1FA2',researcher:'#2E7D32',fisher:'#00695C',
+      professor:'#C62828',elder:'#E65100',farmer:'#33691E',child:'#FF8F00',artisan:'#AD1457',
+      health:'#0277BD',brigadist:'#BF360C',teacher:'#4527A0',all:'#1B5E20'};
+    const bodyColor = colors[npc.type] || '#455A64';
+
+    // Body block
+    ctx.fillStyle = bodyColor;
+    this.drawBlock(ctx, x + 4, y + 14 + bob, 20, 22, 4);
+
+    // Head block
+    ctx.fillStyle = '#FFCC80';
+    this.drawBlock(ctx, x + 6, y + 2 + bob, 16, 14, 4);
+
+    // Eyes
+    ctx.fillStyle = '#333';
+    ctx.fillRect(x + 10, y + 7 + bob, 3, 3);
+    ctx.fillRect(x + 16, y + 7 + bob, 3, 3);
+
+    // Smile
+    ctx.strokeStyle = '#5D4037';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(x + 14, y + 12 + bob, 4, 0.1, Math.PI - 0.1);
+    ctx.stroke();
+
+    // Interaction indicator
+    const dist = Math.abs((this.player.x + this.player.w/2) - (x + 14));
+    if (dist < 60 && !npc._talked) {
+      ctx.fillStyle = 'rgba(0,0,0,0.75)';
+      this.drawBlock(ctx, x-10, y-22, 48, 18, 8);
+      ctx.fillStyle = '#fff';
+      ctx.font = '700 10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('💬 CONVERSAR', x + 14, y - 10 + Math.sin(time * 3) * 3);
+      ctx.textAlign = 'left';
+    }
+  },
+
+  drawPlayer: function(ctx, p, time) {
+    if (p.invTimer > 0 && Math.floor(time*10) % 2 === 0) return;
+    const x = p.x, y = p.y;
+    const f = p.facing;
+    const walking = Math.abs(p.vx) > 10;
+    const legOffset = walking ? Math.sin(time * 12) * 4 : 0;
+
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.12)';
+    ctx.beginPath(); ctx.ellipse(x + 14, y + p.h, 12, 4, 0, 0, Math.PI * 2); ctx.fill();
+
+    // Legs
+    ctx.fillStyle = '#1565C0';
+    this.drawBlock(ctx, x + 4, y + 24, 8, 12 + legOffset, 2);
+    this.drawBlock(ctx, x + 16, y + 24, 8, 12 - legOffset, 2);
+
+    // Body
+    ctx.fillStyle = '#43A047';
+    this.drawBlock(ctx, x + 2, y + 12, 24, 14, 4);
+
+    // Vest detail
+    ctx.fillStyle = '#2E7D32';
+    this.drawBlock(ctx, x + 4, y + 13, 6, 12, 2);
+    this.drawBlock(ctx, x + 18, y + 13, 6, 12, 2);
+
+    // Head
+    ctx.fillStyle = '#FFCC80';
+    this.drawBlock(ctx, x + 6, y, 16, 14, 4);
+
+    // Hat (researcher)
+    ctx.fillStyle = '#795548';
+    this.drawBlock(ctx, x + 3, y - 4, 22, 6, 3);
+    ctx.fillStyle = '#8D6E63';
+    this.drawBlock(ctx, x + 6, y - 8, 16, 6, 3);
+
+    // Eyes
+    ctx.fillStyle = '#333';
+    if (f > 0) {
+      ctx.fillRect(x + 12, y + 4, 3, 3);
+      ctx.fillRect(x + 18, y + 4, 3, 3);
+    } else {
+      ctx.fillRect(x + 7, y + 4, 3, 3);
+      ctx.fillRect(x + 13, y + 4, 3, 3);
+    }
+
+    // Smile
+    ctx.strokeStyle = '#5D4037';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(x + 14, y + 9, 3, 0.2, Math.PI - 0.2);
+    ctx.stroke();
+
+    // Stud on hat
+    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+    ctx.beginPath(); ctx.arc(x + 14, y - 6, 3, 0, Math.PI * 2); ctx.fill();
+  }
+};
+
+// ============================================
+// BOOT
+// ============================================
+window.addEventListener('DOMContentLoaded', () => G.init());
+</script>
+</body>
+</html>
