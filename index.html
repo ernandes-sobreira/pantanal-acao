@@ -51,12 +51,12 @@ canvas{display:block;width:100%;height:100%;image-rendering:pixelated}
 .screen.active{display:flex}
 
 /* --- TITLE SCREEN --- */
-#title-screen{background:linear-gradient(180deg,#87CEEB 0%,#5BA3D9 30%,#4CAF50 60%,#2E7D32 100%);text-align:center;padding:20px;gap:10px}
+#title-screen{background:#fff;text-align:center;padding:20px;gap:10px}
 .title-logo{display:flex;flex-direction:column;align-items:center;gap:8px}
 .title-icon{font-size:clamp(48px,12vw,80px);filter:drop-shadow(0 4px 8px rgba(0,0,0,0.3))}
-.title-main{font-size:clamp(22px,5vw,36px);font-weight:900;color:#fff;text-shadow:0 3px 6px rgba(0,0,0,0.3);line-height:1.1}
-.title-sub{font-size:clamp(13px,3vw,18px);color:rgba(255,255,255,0.9);font-weight:500;max-width:360px;line-height:1.4}
-.title-unemat{font-size:11px;color:rgba(255,255,255,0.7);margin-top:4px;font-weight:600;letter-spacing:0.5px}
+.title-main{font-size:clamp(22px,5vw,36px);font-weight:900;color:#2E7D32;line-height:1.1}
+.title-sub{font-size:clamp(13px,3vw,18px);color:#37474F;font-weight:500;max-width:360px;line-height:1.4}
+.title-unemat{font-size:11px;color:#558B2F;margin-top:4px;font-weight:600;letter-spacing:0.5px}
 
 /* --- BUTTONS --- */
 .btn{border:none;border-radius:var(--ui-radius);padding:14px 32px;font-size:16px;font-weight:700;cursor:pointer;box-shadow:var(--shadow);transition:transform 0.15s,box-shadow 0.15s;min-height:48px;min-width:140px;text-transform:uppercase;letter-spacing:0.5px}
@@ -64,7 +64,7 @@ canvas{display:block;width:100%;height:100%;image-rendering:pixelated}
 .btn-primary{background:linear-gradient(135deg,#FF8F00,#E65100);color:#fff;border:2px solid rgba(255,255,255,0.3)}
 .btn-secondary{background:linear-gradient(135deg,#2E7D32,#1B5E20);color:#fff;border:2px solid rgba(255,255,255,0.2)}
 .btn-small{padding:10px 20px;font-size:13px;min-width:100px;min-height:40px}
-.btn-outline{background:rgba(255,255,255,0.2);color:#fff;border:2.5px solid rgba(255,255,255,0.7);font-weight:700}
+.btn-outline{background:#fff;color:#2E7D32;border:2.5px solid #2E7D32;font-weight:700}
 
 /* --- MAP SCREEN --- */
 #map-screen{background:linear-gradient(180deg,#E8F5E9 0%,#C8E6C9 50%,#A5D6A7 100%);padding:16px;gap:8px;justify-content:flex-start;overflow-y:auto}
@@ -103,7 +103,7 @@ canvas{display:block;width:100%;height:100%;image-rendering:pixelated}
 .ctrl-dpad{display:flex;gap:6px;align-items:center}
 .ctrl-btn{width:56px;height:56px;border-radius:50%;border:3px solid rgba(0,0,0,0.12);font-size:22px;font-weight:900;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
 .ctrl-move{background:linear-gradient(180deg,#fff,#e0e0e0);color:#333;border:3px solid rgba(0,0,0,0.15)}
-.ctrl-action{background:linear-gradient(135deg,#FF8F00,#E65100);color:#fff;width:64px;height:64px;font-size:15px;font-weight:900;border:3px solid rgba(255,255,255,0.4);text-shadow:0 2px 4px rgba(0,0,0,0.4);letter-spacing:0.5px}
+.ctrl-action{background:linear-gradient(135deg,#FF8F00,#E65100);color:#fff;width:64px;height:64px;font-size:12px;font-weight:900;border:3px solid rgba(255,255,255,0.4);text-shadow:0 2px 4px rgba(0,0,0,0.4);letter-spacing:0.5px}
 .ctrl-jump{background:linear-gradient(135deg,#2E7D32,#1B5E20);color:#fff;border:3px solid rgba(255,255,255,0.3);text-shadow:0 2px 4px rgba(0,0,0,0.4)}
 
 /* --- PHASE SUMMARY --- */
@@ -235,7 +235,7 @@ canvas{display:block;width:100%;height:100%;image-rendering:pixelated}
 @media(max-width:360px){
   .hud-badge{font-size:11px;padding:3px 8px}
   .ctrl-btn{width:46px;height:46px;font-size:18px}
-  .ctrl-action{width:50px;height:50px;font-size:12px}
+  .ctrl-action{width:50px;height:50px;font-size:10px}
   .btn{padding:12px 24px;font-size:14px}
 }
 </style>
@@ -292,14 +292,14 @@ canvas{display:block;width:100%;height:100%;image-rendering:pixelated}
     <div class="title-logo anim-fade">
       <div class="title-icon anim-float">🌿</div>
       <div class="title-main">Guardiões do Carbono</div>
-      <div class="title-main" style="font-size:clamp(14px,3.5vw,22px);color:rgba(255,255,255,0.9)">no Pantanal</div>
+      <div class="title-main" style="font-size:clamp(14px,3.5vw,22px);color:#558B2F">no Pantanal</div>
       <div class="title-sub">Explore, aprenda e leve a ciência para a comunidade. Um jogo de extensão universitária sobre carbono, conservação e sociedade.</div>
       <div class="title-unemat">UNEMAT · Campus Cáceres · Mato Grosso</div>
     </div>
     <button class="btn btn-primary anim-slide" onclick="G.startGame()">JOGAR</button>
     <button class="btn btn-outline btn-small anim-slide" onclick="G.showMedals()">🏅 Medalhas</button>
     <button class="btn btn-outline btn-small anim-slide" onclick="G.showSettings()">⚙️ Opções</button>
-    <div style="font-size:10px;color:rgba(255,255,255,0.5);margin-top:8px">v1.0 · Ciência + Sociedade + Pantanal</div>
+    <a href="https://ernandes-sobreira.github.io/jogos-ambientais/" style="font-size:13px;color:#2E7D32;font-weight:700;margin-top:6px;text-decoration:none">← Todos os jogos</a>
   </div>
 
   <!-- Map Screen -->
@@ -502,7 +502,7 @@ const G = {
            dialogue:[
              {text:'Bem-vindo ao Pantanal! Sou Joaquim, guia local. Aqui tudo se conecta: solo, água, vegetação e o ar que respiramos.',actions:[{label:'Continuar',next:1}]},
              {text:'O carbono está em toda parte. No solo, nas plantas, na água. Quando a vegetação se decompõe, libera carbono para a atmosfera como CO₂ ou CH₄.',actions:[{label:'O que é CH₄?',next:2},{label:'Entendi!',next:3}]},
-             {text:'CH₄ é o metano, um gás que pode ser até 80 vezes mais potente que o CO₂ no aquecimento global. Áreas alagadas podem emitir bastante metano.',actions:[{label:'Interessante!',next:3}]},
+             {text:'CH₄ é o metano. Em 20 anos, ele aquece cerca de 80 vezes mais que a mesma massa de CO₂. Áreas alagadas podem emitir bastante metano.',actions:[{label:'Interessante!',next:3}]},
              {text:'Siga em frente, colete as amostras de solo marcadas com o ícone 🟫 e veja como os ambientes são diferentes. Boa exploração!',actions:[{label:'Vamos lá!',close:true}]}
            ]},
           {x:1550,y:384,type:'student',name:'Ana (Estudante)',avatar:'👩‍🎓',
@@ -529,9 +529,9 @@ const G = {
         type:'quiz',
         title:'Quiz: Primeiros Passos',
         questions:[
-          {q:'O que é o carbono no ambiente?',opts:['Um elemento presente no solo, água, vegetação e atmosfera','Um tipo de rocha do Pantanal','Uma espécie de peixe','Um mineral raro'],correct:0,feedback:'O carbono é um elemento fundamental que circula entre solo, água, seres vivos e atmosfera. É a base da vida!'},
-          {q:'Qual gás pode ser até 80 vezes mais potente que o CO₂ no aquecimento?',opts:['Oxigênio (O₂)','Metano (CH₄)','Nitrogênio (N₂)','Hélio (He)'],correct:1,feedback:'O metano (CH₄) é produzido em ambientes com pouco oxigênio, como áreas alagadas. Tem efeito estufa muito mais forte que o CO₂.'},
-          {q:'Por que coletar amostras de solo é importante?',opts:['Para vender o solo','Para entender quanto carbono o solo armazena','Para construir casas','Para fazer artesanato'],correct:1,feedback:'O solo é um dos maiores reservatórios de carbono do planeta. Medir o carbono no solo ajuda a entender a saúde do ambiente.'}
+          {q:'O que é o carbono no ambiente?',opts:['Um elemento que circula entre solo, água, plantas e ar','Um gás que só existe na fumaça das queimadas','Um mineral raro encontrado no fundo dos rios','Um poluente produzido só pelas indústrias das cidades'],correct:0,feedback:'O carbono é um elemento fundamental que circula entre solo, água, seres vivos e atmosfera. É a base da vida!'},
+          {q:'Em 20 anos, qual gás aquece cerca de 80 vezes mais que a mesma massa de CO₂?',opts:['Metano (CH₄)','Oxigênio (O₂)','Nitrogênio (N₂)','Argônio (Ar)'],correct:0,feedback:'Segundo o IPCC (2021), o metano aquece cerca de 80 vezes mais que a mesma massa de CO₂ em 20 anos. Ele se forma onde falta oxigênio, como em áreas alagadas.'},
+          {q:'Por que coletar amostras de solo é importante?',opts:['Para medir quanto carbono o solo guarda','Para saber a idade das árvores perto do ponto','Para descobrir quanta chuva caiu no último mês','Para contar os animais que vivem no local'],correct:0,feedback:'O solo é um dos maiores reservatórios de carbono do planeta. Medir o carbono no solo ajuda a entender a saúde do ambiente.'}
         ]
       }
     },
@@ -603,13 +603,13 @@ const G = {
       },
       minigame: {
         type:'match',
-        title:'Associe Ambiente e Emissão',
-        desc:'Conecte cada ambiente ao seu nível típico de emissão de CO₂:',
+        title:'Associe Ambiente e Carbono',
+        desc:'Conecte cada ambiente ao que acontece com o carbono nele:',
         pairs:[
-          {left:'🏜️ Solo Exposto',right:'Baixo (50-150 mg/m²/dia)'},
-          {left:'🌾 Campo',right:'Moderado (200-500 mg/m²/dia)'},
-          {left:'🍂 Folhiço',right:'Alto (400-900 mg/m²/dia)'},
-          {left:'💧 Área Alagada',right:'Variável + CH₄ elevado'}
+          {left:'🏜️ Solo Exposto',right:'Sem plantas, pouca matéria orgânica entra'},
+          {left:'🌾 Campo',right:'O capim faz fotossíntese e capta CO₂'},
+          {left:'🍂 Folhiço',right:'Folhas se decompõem e soltam CO₂'},
+          {left:'💧 Área Alagada',right:'Sem oxigênio, forma-se metano'}
         ]
       }
     },
@@ -679,8 +679,8 @@ const G = {
         type:'quiz',
         title:'Quiz: Escolhendo Pontos',
         questions:[
-          {q:'Qual destes NÃO é um bom critério para escolher um ponto de coleta?',opts:['Representatividade do ambiente','Distância de interferências humanas','Proximidade com uma estrada movimentada','Segurança para o pesquisador'],correct:2,feedback:'Pontos próximos a estradas podem ter contaminação e interferência. Um bom ponto deve representar o ambiente natural.'},
-          {q:'Por que o conhecimento local dos ribeirinhos é importante para a pesquisa?',opts:['Não é importante','Eles conhecem o histórico ambiental da região','Apenas para fins turísticos','Para substituir equipamentos'],correct:1,feedback:'Os moradores locais conhecem a história do ambiente, as mudanças sazonais e os locais preservados, complementando os dados científicos.'}
+          {q:'Qual destes NÃO é um bom critério para escolher um ponto de coleta?',opts:['Ficar ao lado de uma estrada movimentada','Representar bem o ambiente estudado','Ter acesso seguro para a equipe','Estar longe de interferências humanas diretas'],correct:0,feedback:'Pontos próximos a estradas podem ter contaminação e interferência. Um bom ponto deve representar o ambiente natural.'},
+          {q:'Por que o conhecimento local dos ribeirinhos é importante para a pesquisa?',opts:['Eles conhecem a história de cheias, secas e fogo da região','Eles substituem as medições feitas com equipamentos','Eles garantem que os dados confirmem a hipótese','Eles tornam desnecessário publicar os resultados'],correct:0,feedback:'Os moradores locais conhecem a história do ambiente, as mudanças sazonais e os locais preservados, complementando os dados científicos.'}
         ]
       }
     },
@@ -752,8 +752,8 @@ const G = {
         type:'quiz',
         title:'Quiz: Ciência e Comunidade',
         questions:[
-          {q:'Por que a universidade precisa dialogar com a sociedade?',opts:['Não precisa, basta publicar artigos','Para aprender com os saberes locais e devolver conhecimento','Apenas para fazer propaganda','Para substituir o conhecimento popular'],correct:1,feedback:'A extensão universitária é uma via de mão dupla: a universidade aprende com a comunidade e devolve conhecimento de forma acessível.'},
-          {q:'Como as queimadas afetam a saúde das pessoas?',opts:['Não afetam','A fumaça contém partículas finas que causam problemas respiratórios','Apenas causam calor','Só afetam os animais'],correct:1,feedback:'As queimadas liberam PM2.5, partículas que entram no sistema respiratório e aumentam doenças, especialmente em crianças e idosos.'}
+          {q:'Por que a universidade precisa dialogar com a sociedade?',opts:['Para aprender com os saberes locais e devolver conhecimento','Porque artigos científicos não podem circular','Para trocar o saber popular pelo acadêmico','Apenas para divulgar a marca da instituição'],correct:0,feedback:'A extensão universitária é uma via de mão dupla: a universidade aprende com a comunidade e devolve conhecimento de forma acessível.'},
+          {q:'Como as queimadas afetam a saúde das pessoas?',opts:['A fumaça leva partículas finas que irritam os pulmões','A fumaça só faz mal a quem está perto das chamas','O calor do fogo aumenta a imunidade das pessoas','As cinzas deixam a água dos rios mais limpa para beber'],correct:0,feedback:'As queimadas liberam PM2.5, partículas que entram no sistema respiratório e aumentam doenças, especialmente em crianças e idosos.'}
         ]
       }
     },
@@ -835,8 +835,8 @@ const G = {
         ];
         w.collectibles = [
           {x:300,y:380,type:'methane',collected:false,label:'Bolhas de metano na superfície'},
-          {x:750,y:410,type:'methane',collected:false,label:'Emissão de CH₄: 15 mg/m²/dia'},
-          {x:1250,y:400,type:'methane',collected:false,label:'Emissão de CH₄: 42 mg/m²/dia'}
+          {x:750,y:410,type:'methane',collected:false,label:'Bolhas saindo da lama alagada'},
+          {x:1250,y:400,type:'methane',collected:false,label:'Mais bolhas onde a água é mais funda'}
         ];
         w.obstacles = [
           {x:200,y:406,type:'jacare',originX:200},
@@ -871,8 +871,8 @@ const G = {
         type:'quiz',
         title:'Quiz: Metano e Áreas Alagadas',
         questions:[
-          {q:'Por que áreas alagadas produzem metano?',opts:['Porque a água é suja','Porque a decomposição ocorre sem oxigênio','Porque os peixes produzem metano','Porque o sol aquece a lama'],correct:1,feedback:'Quando o solo fica submerso, micro-organismos anaeróbicos decompõem matéria orgânica e produzem metano (CH₄) em vez de CO₂.'},
-          {q:'O metano é quantas vezes mais potente que o CO₂ como gás estufa (em 20 anos)?',opts:['2 vezes','10 vezes','Até 80 vezes','Menos potente'],correct:2,feedback:'O CH₄ tem potencial de aquecimento global até 80 vezes maior que o CO₂ em um período de 20 anos, tornando-o um gás de efeito estufa muito poderoso.'}
+          {q:'Por que áreas alagadas produzem metano?',opts:['A decomposição acontece sem oxigênio','Os peixes soltam metano ao respirar debaixo da água','O sol aquece a lama e transforma CO₂ em metano','A água da cheia traz metano das cidades rio acima'],correct:0,feedback:'Quando o solo fica submerso, micro-organismos anaeróbicos decompõem matéria orgânica e produzem metano (CH₄) em vez de CO₂.'},
+          {q:'Em 20 anos, quantas vezes o metano aquece mais que a mesma massa de CO₂?',opts:['Cerca de 80 vezes','Cerca de 2 vezes','Cerca de 10 vezes','Menos que o CO₂'],correct:0,feedback:'Segundo o IPCC (2021), o potencial de aquecimento do metano em 20 anos é cerca de 80 vezes o do CO₂. Em 100 anos, ele cai para perto de 30 vezes, porque o metano dura pouco no ar.'}
         ]
       }
     },
@@ -940,8 +940,8 @@ const G = {
         type:'quiz',
         title:'Quiz: Fogo e Carbono',
         questions:[
-          {q:'O que acontece com o carbono do solo durante uma queimada?',opts:['Fica mais protegido','É liberado para a atmosfera como CO₂','Se transforma em diamante','Não é afetado'],correct:1,feedback:'O fogo queima a matéria orgânica e libera o carbono armazenado de volta para a atmosfera, empobrecendo o solo.'},
-          {q:'Qual a melhor estratégia contra queimadas no Pantanal?',opts:['Proibir toda forma de fogo','Prevenção, manejo integrado e educação comunitária','Deixar queimar naturalmente','Usar avião para apagar'],correct:1,feedback:'A combinação de prevenção, manejo integrado e educação é a abordagem mais eficaz e sustentável para lidar com o fogo no Pantanal.'}
+          {q:'O que acontece com parte do carbono do solo durante uma queimada?',opts:['Vai para a atmosfera como CO₂','Vira oxigênio e é liberado para o ar','Desce para o lençol freático como metano','Nada muda, porque o fogo só queima as folhas'],correct:0,feedback:'O fogo queima a matéria orgânica e libera o carbono armazenado de volta para a atmosfera, empobrecendo o solo.'},
+          {q:'Qual a melhor estratégia contra queimadas no Pantanal?',opts:['Prevenção, manejo integrado do fogo e educação','Proibir o uso do fogo e não fazer mais nada','Deixar todo incêndio queimar até apagar sozinho','Combater só com aviões quando o fogo já está grande'],correct:0,feedback:'A combinação de prevenção, manejo integrado e educação é a abordagem mais eficaz e sustentável para lidar com o fogo no Pantanal.'}
         ]
       }
     },
@@ -989,7 +989,7 @@ const G = {
            ]},
           {x:1800,y:364,type:'researcher',name:'Dr. Rafael',avatar:'👨‍🔬',icon:'👨',w:28,h:36,
            dialogue:[
-             {text:'A restauração funciona! Em 10-15 anos, uma área restaurada pode armazenar quantidades significativas de carbono novamente.',actions:[{label:'E os outros benefícios?',next:1}]},
+             {text:'A restauração funciona, mas leva tempo. Ano a ano, as árvores e o solo voltam a guardar carbono.',actions:[{label:'E os outros benefícios?',next:1}]},
              {text:'Além do carbono: proteção da água, retorno da biodiversidade, regulação do microclima, prevenção de erosão. A restauração é uma das melhores soluções para o clima.',actions:[{label:'A natureza se recupera!',close:true,reward:{science:10,conservation:10}}]}
            ]}
         ];
@@ -1005,8 +1005,8 @@ const G = {
         type:'quiz',
         title:'Quiz: Restauração',
         questions:[
-          {q:'Quanto tempo uma área restaurada leva para acumular carbono significativo?',opts:['1 mês','1 ano','10-15 anos','Nunca recupera'],correct:2,feedback:'A restauração é um processo que leva anos, mas em 10-15 anos, árvores e solo começam a acumular quantidades importantes de carbono.'},
-          {q:'Quais benefícios a restauração traz além do armazenamento de carbono?',opts:['Nenhum outro','Proteção da água, biodiversidade e regulação do clima','Apenas beleza visual','Só benefícios econômicos'],correct:1,feedback:'A restauração gera múltiplos benefícios: proteção hídrica, retorno da fauna e flora, regulação do microclima e prevenção de erosão.'}
+          {q:'Como uma área restaurada volta a guardar carbono?',opts:['Aos poucos, ao longo de anos de crescimento','Em poucas semanas depois do plantio das mudas','Só depois de cem anos, nunca antes disso','Apenas se a área for queimada de vez em quando'],correct:0,feedback:'O carbono se acumula aos poucos, conforme árvores e raízes crescem e o solo recebe matéria orgânica. Por isso proteger o que já existe é mais rápido que restaurar.'},
+          {q:'Quais benefícios a restauração traz além de guardar carbono?',opts:['Protege a água, abriga espécies e ameniza o calor','Nenhum, o único ganho é o carbono guardado','Apenas deixa a paisagem mais bonita para turistas','Aumenta o número de incêndios na estação seca'],correct:0,feedback:'A restauração gera múltiplos benefícios: proteção hídrica, retorno da fauna e flora, regulação do microclima e prevenção de erosão.'}
         ]
       }
     },
@@ -1067,8 +1067,8 @@ const G = {
         type:'quiz',
         title:'Quiz: Ensinando na Escola',
         questions:[
-          {q:'Qual a melhor forma de explicar carbono para crianças?',opts:['Usar fórmulas complexas','Comparar com coisas do dia a dia, como blocos de construção','Mostrar gráficos científicos','Não explicar, é muito difícil'],correct:1,feedback:'Crianças aprendem melhor quando o conteúdo se conecta com o que já conhecem. Metáforas, comparações e atividades práticas são as melhores ferramentas!'},
-          {q:'Por que levar a ciência para as escolas é importante?',opts:['Para os pesquisadores terem mais trabalho','Para inspirar novas gerações e criar consciência ambiental','Não é importante','Apenas para cumprir metas'],correct:1,feedback:'A extensão universitária na escola cria pontes entre o conhecimento científico e a formação cidadã, inspirando futuras gerações de guardiões do ambiente.'}
+          {q:'Qual a melhor forma de explicar carbono para crianças?',opts:['Usar exemplos do dia a dia e atividades práticas','Começar pelas fórmulas químicas completas','Mostrar tabelas de dados de artigos científicos','Evitar o tema porque ele é difícil demais para a idade'],correct:0,feedback:'Crianças aprendem melhor quando o conteúdo se conecta com o que já conhecem. Metáforas, comparações e atividades práticas são as melhores ferramentas!'},
+          {q:'Por que levar a ciência para as escolas é importante?',opts:['Inspira novas gerações e cria consciência ambiental','Serve só para cumprir metas da universidade','Substitui as aulas dos professores da escola','Garante vagas na universidade para os alunos visitados'],correct:0,feedback:'A extensão universitária na escola cria pontes entre o conhecimento científico e a formação cidadã, inspirando futuras gerações de guardiões do ambiente.'}
         ]
       }
     },
@@ -1130,8 +1130,8 @@ const G = {
         type:'quiz',
         title:'Revisão Final da Feira',
         questions:[
-          {q:'O que significa extensão universitária?',opts:['Ampliar o prédio da universidade','Levar o conhecimento da universidade para a sociedade e aprender com ela','Dar mais aulas','Construir novas salas'],correct:1,feedback:'Extensão é a ponte entre universidade e sociedade. É diálogo, aprendizado mútuo e transformação social através do conhecimento.'},
-          {q:'Qual o papel da comunidade na conservação do Pantanal?',opts:['Nenhum, é só trabalho dos cientistas','Fundamental: a conservação acontece com a participação de todos','Apenas obedecer leis','Só observar'],correct:1,feedback:'A conservação só funciona quando a comunidade participa, entende e se engaja. A ciência fornece dados, a comunidade fornece ação e sabedoria local.'}
+          {q:'O que significa extensão universitária?',opts:['Levar conhecimento à sociedade e aprender com ela','Ampliar o prédio da universidade','Aumentar o número de aulas dentro do campus','Oferecer cursos pagos para grandes empresas'],correct:0,feedback:'Extensão é a ponte entre universidade e sociedade. É diálogo, aprendizado mútuo e transformação social através do conhecimento.'},
+          {q:'Qual o papel da comunidade na conservação do Pantanal?',opts:['Essencial, porque conservar depende de todos','Nenhum, conservar é tarefa só dos cientistas','Apenas obedecer às leis que outros escrevem','Só observar e esperar o resultado das pesquisas'],correct:0,feedback:'A conservação só funciona quando a comunidade participa, entende e se engaja. A ciência fornece dados, a comunidade fornece ação e sabedoria local.'}
         ]
       }
     },
@@ -1207,9 +1207,9 @@ const G = {
         type:'quiz',
         title:'Desafio Final: Guardião do Carbono',
         questions:[
-          {q:'O que conecta o solo, a água, a vegetação e a atmosfera no Pantanal?',opts:['O turismo','O ciclo do carbono','A pecuária','A política'],correct:1,feedback:'O carbono circula entre todos os compartimentos ambientais: solo, água, vegetação e atmosfera. Entender esse ciclo é chave para a conservação.'},
-          {q:'Qual a principal mensagem deste jogo?',opts:['A ciência é só para cientistas','A universidade e a sociedade, juntas, podem conservar o Pantanal','O Pantanal não precisa de proteção','O carbono não é importante'],correct:1,feedback:'A ciência ganha sentido quando chega às pessoas. A conservação acontece quando universidade e sociedade trabalham juntas. Essa é a essência da extensão universitária.'},
-          {q:'O que significa ser um Guardião do Carbono?',opts:['Ter um diploma','Entender o carbono, compartilhar esse conhecimento e agir pela conservação','Apenas coletar amostras','Morar no Pantanal'],correct:1,feedback:'Um Guardião do Carbono entende a ciência, dialoga com a sociedade e age pela conservação. Qualquer pessoa pode ser um guardião!'}
+          {q:'O que conecta o solo, a água, a vegetação e a atmosfera no Pantanal?',opts:['O ciclo do carbono','O turismo de pesca','A rede de estradas','O calendário escolar'],correct:0,feedback:'O carbono circula entre todos os compartimentos ambientais: solo, água, vegetação e atmosfera. Entender esse ciclo é chave para a conservação.'},
+          {q:'Qual a principal mensagem deste jogo?',opts:['Universidade e sociedade juntas conservam o Pantanal','A ciência deve ficar restrita aos laboratórios','O Pantanal se conserva sozinho, sem cuidado','O carbono só importa para quem faz pesquisa'],correct:0,feedback:'A ciência ganha sentido quando chega às pessoas. A conservação acontece quando universidade e sociedade trabalham juntas. Essa é a essência da extensão universitária.'},
+          {q:'O que significa ser um Guardião do Carbono?',opts:['Entender o carbono, compartilhar e agir','Ter um diploma de pós-graduação em ciências','Apenas coletar amostras de solo no campo','Morar dentro de uma área protegida do Pantanal'],correct:0,feedback:'Um Guardião do Carbono entende a ciência, dialoga com a sociedade e age pela conservação. Qualquer pessoa pode ser um guardião!'}
         ]
       }
     }
@@ -1618,23 +1618,25 @@ const G = {
       if (qIdx >= mg.questions.length) {
         el.innerHTML = `
           <div class="mg-title">🎉 Quiz Completo!</div>
-          <div class="mg-desc">Você acertou ${correctCount} de ${mg.questions.length}!</div>
+          <div class="mg-desc">Você acertou ${correctCount} de ${mg.questions.length}! Pontos de ciência: ${correctCount * 5 - (mg.questions.length - correctCount) * 3 >= 0 ? '+' : ''}${correctCount * 5 - (mg.questions.length - correctCount) * 3}</div>
           <div style="font-size:40px;text-align:center;margin:12px 0">${correctCount === mg.questions.length ? '⭐⭐⭐' : correctCount > 0 ? '⭐⭐' : '⭐'}</div>
           <button class="btn btn-primary" style="width:100%" onclick="G.closeMinigame()">Continuar</button>
         `;
-        this.addScore('science', correctCount * 5);
+        this.addScore('science', correctCount * 5 - (mg.questions.length - correctCount) * 3);
         return;
       }
       const q = mg.questions[qIdx];
       el.innerHTML = `
         <div class="mg-title">${mg.title}</div>
-        <div class="mg-desc">Pergunta ${qIdx + 1} de ${mg.questions.length}</div>
+        <div class="mg-desc">Pergunta ${qIdx + 1} de ${mg.questions.length} · acerto +5, erro −3</div>
         <div class="quiz-question">${q.q}</div>
         <div class="quiz-options" id="quiz-opts"></div>
         <div class="quiz-feedback" id="quiz-fb"></div>
       `;
       const optsEl = document.getElementById('quiz-opts');
-      q.opts.forEach((opt, i) => {
+      const ord = q.opts.map((t, k) => ({t, k})).sort(() => Math.random() - .5);
+      const shown = ord.map(o => o.t), correctPos = ord.findIndex(o => o.k === q.correct);
+      shown.forEach((opt, i) => {
         const btn = document.createElement('div');
         btn.className = 'quiz-opt';
         btn.textContent = opt;
@@ -1642,11 +1644,11 @@ const G = {
           // Disable all
           optsEl.querySelectorAll('.quiz-opt').forEach((b, j) => {
             b.style.pointerEvents = 'none';
-            if (j === q.correct) b.classList.add('correct');
-            else if (j === i && i !== q.correct) b.classList.add('wrong');
+            if (j === correctPos) b.classList.add('correct');
+            else if (j === i && i !== correctPos) b.classList.add('wrong');
           });
           const fb = document.getElementById('quiz-fb');
-          if (i === q.correct) {
+          if (i === correctPos) {
             correctCount++;
             fb.className = 'quiz-feedback show pos';
             fb.textContent = '✅ ' + q.feedback;
